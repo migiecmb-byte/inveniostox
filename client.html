@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>InvenioStox Demo</title>
+<link rel="manifest" href="manifest-client.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#0b3438">
 <style>
 :root{--bg:#0b3438;--panel:#0f4247;--panel2:#13505a;--line:#2a6870;--gold:#d4b25a;--silver:#c9d1d6;--text:#eef3f4;--muted:#9fb7bb;--ok:#3fbf7f;--warn:#e5a93b;--bad:#e05757}
 *{box-sizing:border-box}
@@ -727,15 +731,21 @@ function cv(v,from,to){const a=UF[from],b=UF[to];if(!a||!b)return NaN;if(a[0]!==
 function units(u){const f=(UF[u]||['c'])[0];return f==='c'?['pcs']:['g','kg','ml','L'];}
 /* items counted in packs (unit pcs) keep a pack size, e.g. {type:'packet',q:1,u:'kg'}; recipes may then use g / ml */
 function hasPack(it){return !!(it&&it.unit==='pcs'&&it.pack&&UF[it.pack.u]&&+it.pack.q>0);}
-function iu(it){return hasPack(it)?['pcs',...units(it.pack.u)]:units(it?it.unit:'kg');}
+function iu(it){return ['pcs'];}
+/* recipes (in-house products) may use g / ml of an item that has a pack size */
+function iuR(it){return hasPack(it)?['pcs',...units(it.pack.u)]:units(it?it.unit:'kg');}
+const PL={box:'boxes',piece:'pieces','no.':'no.'};
+function pkType(it){return (it&&it.pack&&it.pack.type)||'no.';}
+function pkName(it,n){const t=pkType(it);if(t==='no.')return 'no.';return n===1?t:(PL[t]||t+'s');}
+function uN(it){return it?pkName(it):'no.';}
 function toStk(q,u,it){if(!it)return NaN;if(!u||u===it.unit)return +q;if(hasPack(it)&&UF[u]&&UF[u][0]!=='c')return cv(+q,u,it.pack.u)/(+it.pack.q);return cv(+q,u,it.unit);}
 function uName(u){return u==='pcs'?'no.':u;}
-function uOpts(list,sel){return list.map(u=>`<option value="${u}" ${u===sel?'selected':''}>${uName(u)}</option>`).join('');}
-function packTxt(it){return hasPack(it)?(it.pack.type||'pack')+' of '+r6(+it.pack.q)+' '+it.pack.u:'';}
-function unitLabel(it){return it.unit==='pcs'?'No.'+(hasPack(it)?' ('+packTxt(it)+')':''):it.unit;}
-const PACKS=['packet','can','bottle','jar','tin','bag','box','carton','tub','sachet','piece'];
+function uOpts(list,sel,it){return list.map(u=>`<option value="${u}" ${u===sel?'selected':''}>${u==='pcs'&&it?pkName(it):uName(u)}</option>`).join('');}
+function packTxt(it){return hasPack(it)?(it.pack.type&&it.pack.type!=='no.'?it.pack.type:'pack')+' of '+r6(+it.pack.q)+' '+it.pack.u:'';}
+function unitLabel(it){if(!it||!it.unit)return '';const n=pkName(it);return n.charAt(0).toUpperCase()+n.slice(1)+(hasPack(it)?' ('+r6(+it.pack.q)+' '+it.pack.u+' each)':'');}
+const PACKS=['bottle','packet','can','jar','tin','bag','box','carton','tub','sachet','piece','no.'];
 /* live conversion text under a quantity box; liquids weighed in grams use 1 g = 1 ml */
-function convText(q,u,it){q=+q;if(!(q>0)||!it||!UF[u]||u==='pcs')return '';if(it.unit==='pcs')return hasPack(it)?'= '+fq(toStk(q,u,it),'pcs')+' × '+packTxt(it):'';const g=cv(q,u,'g'),x=cv(q,u,it.unit),cross=UF[u][0]!==UF[it.unit][0];
+function convText(q,u,it){q=+q;if(q>0&&it&&u==='pcs'&&hasPack(it))return '= '+(t=>t>=1000&&/^(g|ml)$/.test(it.pack.u)?r6(t/1000).toLocaleString()+' '+(it.pack.u==='g'?'kg':'L'):r6(t).toLocaleString()+' '+it.pack.u)(q*it.pack.q)+' in total ('+r6(q)+' × '+r6(+it.pack.q)+' '+it.pack.u+')';if(!(q>0)||!it||!UF[u]||u==='pcs')return '';if(it.unit==='pcs')return hasPack(it)?'= '+fq(toStk(q,u,it),'pcs')+' × '+packTxt(it):'';const g=cv(q,u,'g'),x=cv(q,u,it.unit),cross=UF[u][0]!==UF[it.unit][0];
   return '= '+r6(g).toLocaleString(undefined,{maximumFractionDigits:3})+' g · '+fq(x,it.unit)+(cross?' (1 g = 1 ml)':'');}
 function qcv(id,q,u,itemId){const e=$(id);if(e)e.textContent=convText(q,u,item(itemId));}
 function fq(v,u){if(v==null||isNaN(v))return '—';if(u==='pcs')return r6(v).toLocaleString(undefined,{maximumFractionDigits:2});let a=Math.abs(v);
@@ -771,7 +781,12 @@ function blank(){
     s.items.push({id:rid(),key,ini,sku:skuFmt(ini,s.seq.SKU[ini]),name,cat,unit,pack,reorder:0,seller:'',alts:[],notes:'',created:Date.now()});});
   return s;}
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.items)&&Array.isArray(s.lots))return fix(s);}catch(e){}const b=fix(blank());b._fresh=true;return b;}
-function fix(s){s.items.forEach(i=>{if(!Array.isArray(i.alts))i.alts=[];});s.sellers=s.sellers||[];s.reqs=s.reqs||[];s.moves=s.moves||[];
+function fix(s){s.items.forEach(i=>{if(!Array.isArray(i.alts))i.alts=[];});
+  /* stock is always counted in packs: older items counted in g / kg / ml / L become packs of 1 kg or 1 L, and their quantities are converted */
+  s.items.forEach(i=>{if(i.unit==='pcs'||!UF[i.unit])return;const old=i.unit,big=UF[old][0]==='m'?'kg':'L',k=cv(1,old,big);
+    i.unit='pcs';i.pack={type:big==='kg'?'packet':'bottle',q:1,u:big};i.reorder=r6((+i.reorder||0)*k);
+    (s.lots||[]).forEach(l=>{if(l.itemId===i.id){l.qtyIn=r6(l.qtyIn*k);l.qtyLeft=r6(l.qtyLeft*k);}});
+    (s.moves||[]).forEach(m=>{if(m.itemId===i.id)m.qty=r6(m.qty*k);});});s.sellers=s.sellers||[];s.reqs=s.reqs||[];s.moves=s.moves||[];
   s.prods=s.prods||[];s.cats=s.cats||[];s.clients=s.clients||[];if(!s.clients.some(c=>c.id==='inhouse'))s.clients.unshift({id:'inhouse',code:'IH',name:'In-house production',internal:true,contact:'',phone:'',email:'',address:'',notes:'',created:Date.now()});s.seq=s.seq||{};[['SKU',{}],['SUP',0],['LOT',{}],['REQ',{}],['GRN',{}],['CLI',0],['REL',{}],['INV',{}]].forEach(([k,v])=>{if(!(k in s.seq))s.seq[k]=v;});
   s.set=s.set||{};[['biz','MCR Concept'],['cc','94'],['warn',30],['boPhone',''],['boEmail','']].forEach(([k,v])=>{if(!(k in s.set))s.set[k]=v;});delete s.set.pre;return s;}
 function saveLocal(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){toast('Could not save on this device');}}
@@ -888,7 +903,7 @@ function mvTable(list,showItem){if(!list.length)return '<div class="card note">N
   </tbody></table></div>`;}
 
 /* ================= LOT DETAIL ================= */
-function vLot(){const l=lot(param);if(!l)return nf();const it=item(l.itemId),sl=seller(l.seller),uo=uOpts(iu(it),it.unit);
+function vLot(){const l=lot(param);if(!l)return nf();const it=item(l.itemId),sl=seller(l.seller),uo=uOpts(iu(it),it.unit,it);
   return `<div class="acts top"><button onclick="go('item','${it.id}')">← ${esc(it.name)}</button><button onclick="sendBox('Send lot details','Lot '+lot(param).lot,lotText(lot(param)),'','',()=>defLot(lot(param)))">Send</button></div>
   <div class="card"><div class="hd"><div style="flex:1;min-width:240px"><div class="note">Our lot no.</div><h2 style="margin:0" class="mono">${esc(l.lot)}</h2>
     <div>${esc(it.name)} · <span class="mono">${esc(it.sku)}</span></div>
@@ -897,14 +912,14 @@ function vLot(){const l=lot(param);if(!l)return nf();const it=item(l.itemId),sl=
     <div class="qrb">${qr(l.lot)}</div></div></div>
   <div class="acts"><button class="pri" onclick="labelPng([lotLabelData(lot('${l.id}'))],'Label-${esc(l.lot)}.png')">Lot label</button></div>
   <div class="two" style="margin-top:12px">
-   <div class="card"><h3>Hand out from this lot</h3><div class="row"><input id="iq" type="number" min="0" step="any" inputmode="decimal" placeholder="Quantity"><select id="iu">${uo}</select></div>
+   <div class="card"><h3>Hand out from this lot</h3><div class="row"><input id="iq" type="number" min="1" step="1" inputmode="numeric" placeholder="Quantity (whole packs)"><select id="iu">${uo}</select></div>
     <input id="ir" placeholder="Reason or production batch no." style="margin-top:8px"><input id="ib" placeholder="Handed out by">
     <div class="acts"><button class="pri" onclick="lotIssue('${l.id}')">Hand out</button></div></div>
    <div class="card"><h3>Stock count</h3><div class="note" style="margin-bottom:8px">Enter the counted quantity of this lot. The difference is recorded.</div><div class="row"><input id="aq" type="number" min="0" step="any" inputmode="decimal" placeholder="Counted quantity"><select id="au">${uo}</select></div>
     <input id="ar" placeholder="Reason" style="margin-top:8px"><input id="ab" placeholder="Counted by">
     <div class="acts"><button onclick="lotAdj('${l.id}')">Save count</button></div></div></div>
   <h2>Movements</h2>${mvTable(S.moves.filter(m=>m.lotId===l.id),false)}`;}
-async function lotIssue(id){const l=lot(id),it=item(l.itemId);const v=+$('iq').value;if(!(v>0))return toast('Enter the quantity to hand out');
+async function lotIssue(id){const l=lot(id),it=item(l.itemId);const v=+$('iq').value;if(!(v>0))return toast('Enter the quantity to hand out');if(!Number.isInteger(v))return toast('Whole '+pkName(it)+' only — no part packs');
   const qq=r6(toStk(v,$('iu').value,it));if(qq>l.qtyLeft+1e-9)return toast('Only '+fq(l.qtyLeft,it.unit)+' left in this lot');
   if(l.exp&&daysTo(l.exp)<0&&!(await ask('This lot is expired. Hand out anyway?')))return;
   takeStock(it.id,[{lotId:l.id,q:qq}],'OUT',$('ir').value.trim(),$('ib').value.trim());save();render();toast('Handed out '+fq(qq,it.unit));}
@@ -937,20 +952,20 @@ function vRecv(){const r=rcv,sl=seller(r.sup),its=r.lines.map(l=>item(l.item)).f
   <div class="acts" style="margin-top:0"><button class="pri big" onclick="doGrn()">Generate Lot Numbers</button><button onclick="ask('Clear this form?').then(y=>{if(y){rcv=newRcv(rcv.by);render()}})">Clear</button></div>
   <div class="note">Generate Lot Numbers: adds the items to stock, gives each one our lot number and makes the GRN (goods received note).</div>
   <h2>Recent receipts</h2>${recvTable(S.lots.slice().sort((a,b)=>b.created-a.created).slice(0,20))}`;}
-function lineCard(l,i){const it=item(l.item),uu=it?iu(it):['g','kg','ml','L','pcs'],u=uu.includes(l.unit)?l.unit:(it?it.unit:(l.unit||'kg'));
+function lineCard(l,i){const it=item(l.item),uu=['pcs'],u='pcs';
   const sc=!!rcv.scan;
   return `<div class="card" ${l.unclear?'style="border-color:var(--warn)"':''}><div class="mt"><b>Line ${i+1}</b>${l.unclear?' <span class="tag warn">not clear — check</span>':''}${rcv.lines.length>1?`<button class="sm bad" onclick="rcv.lines.splice(${i},1);render()">✕ Remove</button>`:''}</div>
    ${l.docName&&!it?`<div class="note" style="margin-bottom:8px">On the invoice: "${esc(l.docName)}" is not in Items. ${canItems()?`<a onclick="quickItem(${i})">Add it as a new item</a>, or choose`:'Ask Admin to add it as a new item, or choose'} the item below.</div>`:''}
    <label>Item<div class="row"><select class="${sc&&!l.item?'need':''}" onchange="rcvItem(${i},this.value)"><option value="">— Select item —</option>${itemOpts(l.item)}</select><button onclick="scanLine(${i})">Scan</button></div></label>
    <div class="two"><label>Supplier lot / batch no.<input value="${esc(l.supLot)}" oninput="rcv.lines[${i}].supLot=this.value"></label>
-    <label>Quantity<div class="row"><input class="${sc&&!l.qty?'need':''}" type="number" min="0" step="any" inputmode="decimal" value="${esc(l.qty)}" oninput="rcv.lines[${i}].qty=this.value;this.classList.toggle('need',!this.value);qcv('qc${i}',this.value,rcv.lines[${i}].unit||'${u}','${l.item}')"><select onchange="rcv.lines[${i}].unit=this.value;qcv('qc${i}',rcv.lines[${i}].qty,this.value,'${l.item}')">${uOpts(uu,u)}</select></div><div class="note" id="qc${i}" style="margin-top:4px">${convText(l.qty,u,it)}</div></label></div>
+    <label>Quantity<div class="row"><input class="${sc&&!l.qty?'need':''}" type="number" min="0" step="any" inputmode="decimal" value="${esc(l.qty)}" oninput="rcv.lines[${i}].qty=this.value;this.classList.toggle('need',!this.value);qcv('qc${i}',this.value,rcv.lines[${i}].unit||'${u}','${l.item}')"><select onchange="rcv.lines[${i}].unit=this.value;qcv('qc${i}',rcv.lines[${i}].qty,this.value,'${l.item}')">${uOpts(uu,u,it)}</select></div><div class="note" id="qc${i}" style="margin-top:4px">${convText(l.qty,u,it)}</div></label></div>
    <div class="two"><label>Expiry date<input class="${sc&&!l.exp?'need':''}" type="date" value="${esc(l.exp)}" onchange="rcv.lines[${i}].exp=this.value;this.classList.toggle('need',!this.value)"></label><label>Manufacture date (optional)<input type="date" value="${esc(l.mfg)}" onchange="rcv.lines[${i}].mfg=this.value"></label></div>
    <div class="note">Our lot no. is created automatically${it?': '+esc((it.ini||initials(it.name))+'-'+ymd6(rcv.date)+'-…'):''}</div></div>`;}
 function rcvItem(i,v){const l=rcv.lines[i],it=item(v);l.item=v;l.unclear=false;if(it){l.docName='';if(!iu(it).includes(l.unit))l.unit=it.unit;if(!rcv.sup&&it.seller)rcv.sup=it.seller;}render();}
 function rcvSup(v){rcv.sup=v;const its=rcv.lines.map(l=>item(l.item)).filter(Boolean),sl=seller(v);$('sinf').innerHTML=sellerInfo(sl,sl&&its.some(i=>i.seller===sl.id));}
 function scanLine(i){openScan(c=>{const r=parseCode(c),it=r.item||(r.lot&&item(r.lot.itemId));if(it){rcvItem(i,it.id);toast(it.name);}else toast('Not found: '+c);});}
 function quickItem(i){if(!canItems())return toast('Only Admin can add items');const l=rcv.lines[i],nm=(l.docName||'').trim();if(!nm)return;
-  const it={id:rid(),key:null,ini:initials(nm),sku:takeSku(nm),name:nm,cat:'RM',unit:l.unit||'kg',reorder:0,seller:'',alts:[],notes:'Added from invoice',created:Date.now()};
+  const it={id:rid(),key:null,ini:initials(nm),sku:takeSku(nm),name:nm,cat:'RM',unit:'pcs',pack:{type:'packet',q:0,u:'kg'},reorder:0,seller:'',alts:[],notes:'Added from invoice',created:Date.now()};
   if(rcv.sup)linkSeller(it,rcv.sup);S.items.push(it);l.item=it.id;l.docName='';save();render();toast('Item added: '+it.sku);}
 function newSupCard(){const n=rcv.newSup;return `<div class="card" style="border-color:var(--warn)"><b>Supplier on the invoice is not saved yet</b>
    <label style="margin-top:8px">Supplier / company name<input value="${esc(n.name)}" oninput="rcv.newSup.name=this.value"></label>
@@ -1016,9 +1031,9 @@ function vProdEdit(){if(!pe)return nf();
    <label>Product name<input value="${esc(pe.name)}" placeholder="e.g. Chicken Stock Powder" oninput="pe.name=this.value"></label></div>
   <h2>Store items per 1 ${pe.unit} of product</h2>
   <div class="card scroll"><table><thead><tr><th>Store item</th><th>Qty per 1 ${pe.unit}</th><th>Unit</th><th></th></tr></thead><tbody>
-  ${pe.lines.map((l,x)=>{const it=item(l.item);return `<tr><td style="min-width:220px"><select onchange="pe.lines[${x}].item=this.value;const t=item(this.value);if(t&&!iu(t).includes(pe.lines[${x}].unit))pe.lines[${x}].unit=t.unit;render()"><option value="">— Select item —</option>${itemOpts(l.item)}</select></td>
+  ${pe.lines.map((l,x)=>{const it=item(l.item);return `<tr><td style="min-width:220px"><select onchange="pe.lines[${x}].item=this.value;const t=item(this.value);if(t&&!iuR(t).includes(pe.lines[${x}].unit))pe.lines[${x}].unit=t.unit;render()"><option value="">— Select item —</option>${itemOpts(l.item)}</select></td>
    <td style="min-width:110px"><input type="number" min="0" step="any" inputmode="decimal" value="${esc(l.qty)}" oninput="pe.lines[${x}].qty=this.value"></td>
-   <td><select style="width:90px" onchange="pe.lines[${x}].unit=this.value">${uOpts(it?iu(it):['g','kg','ml','L','pcs'],l.unit)}</select></td>
+   <td><select style="width:90px" onchange="pe.lines[${x}].unit=this.value">${uOpts(it?iuR(it):['g','kg','ml','L','pcs'],l.unit,it)}</select></td>
    <td><button class="sm bad" onclick="pe.lines.splice(${x},1);render()">✕</button></td></tr>`;}).join('')||'<tr><td colspan="4" class="note">No items yet.</td></tr>'}
   </tbody></table><div class="acts"><button onclick="pe.lines.push({item:'',qty:'',unit:'g'});render()">+ Item</button><button onclick="retView='prodEdit';go('itemEdit','new')">+ New item</button></div>
   <div class="note" style="margin-top:8px">Only store items are listed here. Anything not kept in the store is not deducted.</div></div>
@@ -1051,7 +1066,7 @@ function clientOpts(sel){return S.clients.filter(c=>!c.internal).sort((a,b)=>a.n
 function clientInfo(c){if(!c)return '<span class="note">Select a client or In-house production.</span>';if(c.internal)return '<b>In-house production</b> <span class="note">stock handed out to our own production</span>';
   const d=[c.contact&&'Contact: '+esc(c.contact),c.phone&&'WhatsApp / phone: '+esc(c.phone),c.email&&'Email: '+esc(c.email),c.address&&'Address: '+esc(c.address)].filter(Boolean);
   return `<b>${esc(c.name)}</b> <span class="note">${esc(c.code||'')}</span><div class="note">${d.join('<br>')||'No contact details saved'}</div>`;}
-function relNeeds(){const by={};rel.lines.forEach(l=>{const it=item(l.item),q=+l.qty;if(!it||!(q>0))return;const n=r6(toStk(q,l.unit||it.unit,it));if(isNaN(n))return;by[it.id]=r6((by[it.id]||0)+n);});
+function relNeeds(){const by={};rel.lines.forEach(l=>{const it=item(l.item),q=+l.qty;if(!it||!(q>0)||!Number.isInteger(q))return;const n=r6(toStk(q,l.unit||it.unit,it));if(isNaN(n))return;by[it.id]=r6((by[it.id]||0)+n);});
   return Object.keys(by).map(id=>{const it=item(id);return{it,need:by[id],...allocate(id,by[id])};});}
 function vRelease(){const c=client(rel.client),ih=c&&c.internal,P=relNeeds(),short=P.some(p=>p.short);
   if(!c&&rel.pick!=='client')return `<div class="card"><div class="note" style="margin-bottom:8px">1. Hand out to</div><div class="grid">
@@ -1070,10 +1085,10 @@ function vRelease(){const c=client(rel.client),ih=c&&c.internal,P=relNeeds(),sho
    ${ih?'':`<label>Sales person<input list="salesL" value="${esc(rel.sales)}" oninput="rel.sales=this.value"><datalist id="salesL">${salesNames().map(n=>`<option value="${esc(n)}">`).join('')}</datalist></label>`}
    <div class="two"><label>Handed out by<input value="${esc(rel.by)}" oninput="rel.by=this.value"></label><label>Notes (vehicle, delivery address, etc.)<input value="${esc(rel.note)}" oninput="rel.note=this.value"></label></div></div>
   <h2>Items</h2>
-  ${rel.lines.map((l,i)=>{const it=item(l.item),u=l.unit||(it?it.unit:'kg');return `<div class="card form2"><div class="hd" style="align-items:center"><b>Line ${i+1}</b>${rel.lines.length>1?`<button class="sm bad" onclick="rel.lines.splice(${i},1);render()">✕ Remove</button>`:''}</div>
+  ${rel.lines.map((l,i)=>{const it=item(l.item),u='pcs';return `<div class="card form2"><div class="hd" style="align-items:center"><b>Line ${i+1}</b>${rel.lines.length>1?`<button class="sm bad" onclick="rel.lines.splice(${i},1);render()">✕ Remove</button>`:''}</div>
     <label>Item<select onchange="rel.lines[${i}].item=this.value;rel.lines[${i}].unit=(item(this.value)||{}).unit||'';render()"><option value="">— Select item —</option>${itemOpts(l.item)}</select></label>
-    ${it?`<div class="note" style="margin-bottom:10px">Usable in hand: ${fq(stat(it).usable,it.unit)}</div>`:''}
-    <label>Quantity<div class="row"><input type="number" min="0" step="any" inputmode="decimal" value="${esc(l.qty)}" onchange="rel.lines[${i}].qty=this.value;render()"><select onchange="rel.lines[${i}].unit=this.value;render()">${uOpts(it?iu(it):['g','kg','ml','L'],u)}</select></div></label></div>`;}).join('')}
+    ${it?`<div class="note" style="margin-bottom:10px">Usable in hand: ${fq(stat(it).usable,it.unit)} ${pkName(it)}</div>`:''}${it&&+l.qty>0&&!Number.isInteger(+l.qty)?`<div class="note" style="color:var(--bad);margin-bottom:8px">Whole ${pkName(it)} only — no part packs.</div>`:''}
+    <label>Quantity (whole ${it?pkName(it):'packs'} only)<div class="row"><input type="number" min="1" step="1" inputmode="numeric" value="${esc(l.qty)}" onchange="rel.lines[${i}].qty=this.value;render()"><select onchange="rel.lines[${i}].unit=this.value;render()">${uOpts(['pcs'],u,it)}</select></div></label></div>`;}).join('')}
   <div class="acts" style="margin-top:0"><button onclick="rel.lines.push({item:'',qty:'',unit:''});render()">+ Item</button></div>
   ${P.length?`<div class="card scroll"><div class="note" style="margin-bottom:8px">Lots are taken first-expiry-first. Expired lots are never handed out.</div><table><thead><tr><th>Item</th><th>To hand out</th><th>Usable in hand</th><th>Take from lots</th><th>Remaining after</th><th>Status</th></tr></thead><tbody>
    ${P.map(p=>`<tr><td>${esc(p.it.name)}<div class="note">${esc(p.it.sku)}</div></td><td class="num">${fq(p.need,p.it.unit)}</td><td>${fq(p.avail,p.it.unit)}</td><td>${p.picks.map(k=>{const l=lot(k.lotId);return `<div style="white-space:nowrap"><span class="mono">${esc(l.lot)}</span> — ${fq(k.q,p.it.unit)}${l.exp?' · exp '+fd(l.exp):''}</div>`;}).join('')||'—'}</td><td>${fq(r6(p.avail-p.need),p.it.unit)}</td><td>${p.short?`<span class="badge b-bad">SHORT ${fq(p.short,p.it.unit)}</span>`:'<span class="badge b-ok">OK</span>'}</td></tr>`).join('')}
@@ -1083,7 +1098,7 @@ function vRelease(){const c=client(rel.client),ih=c&&c.internal,P=relNeeds(),sho
   ${short?'<div class="note">Cannot hand out: one or more items are short.</div>':''}
   ${recentRel()}`;}
 async function doRelease(){const c=client(rel.client);if(!c)return toast('Select a client or In-house production');if(!rel.recip.trim())return toast('Enter the recipient name');
-  if(!c.internal&&!rel.sales.trim())return toast('Enter the sales person name');const P=relNeeds();if(!P.length)return toast('Add at least one item with a quantity');
+  if(!c.internal&&!rel.sales.trim())return toast('Enter the sales person name');{const bad=rel.lines.findIndex(l=>item(l.item)&&+l.qty>0&&!Number.isInteger(+l.qty));if(bad>=0)return toast('Line '+(bad+1)+': whole '+pkName(item(rel.lines[bad].item))+' only — no part packs');}const P=relNeeds();if(!P.length)return toast('Add at least one item with a quantity');
   if(P.some(p=>p.short))return toast('Stock is short');
   if(!(await ask(`Hand out ${P.length} item(s) to ${c.name} and deduct stock?`)))return;
   const no=newRelNo(),inv=newInvNo(c),ref=[docWord(c)+' '+inv,'Release '+no,rel.order.trim()&&'PO '+rel.order.trim(),'Recipient '+rel.recip.trim(),!c.internal&&'Sales '+rel.sales.trim(),rel.note.trim()].filter(Boolean).join(' · '),n0=S.moves.length;
@@ -1211,7 +1226,7 @@ function findCode(t){t=String(t||'').trim();const out=$('mres');if(!t){if(out)ou
 /* ================= STOCK REQUEST ================= */
 function waNum(p){let d=String(p||'').replace(/\D/g,'');if(d.startsWith('00'))d=d.slice(2);else if(d.startsWith('0'))d=S.set.cc+d.slice(1);return d;}
 function reqText(r){let t=`STOCK REQUEST ${r.no}\n${S.set.biz}\nDate: ${fd(r.date)}${r.by?`\nRequested by: ${r.by}`:''}\n\n`;
-  r.lines.forEach((l,i)=>{const it=item(l.itemId);t+=`${i+1}. ${it?it.name:'(item)'}${it?' ['+it.sku+']':''} — ${l.unit==='pcs'?l.qty:l.qty+' '+l.unit}${it&&l.hand!=null?' (in hand '+fq(l.hand,it.unit)+')':''}\n`;});
+  r.lines.forEach((l,i)=>{const it=item(l.itemId);t+=`${i+1}. ${it?it.name:'(item)'}${it?' ['+it.sku+']':''} — ${l.unit==='pcs'?l.qty+' '+(it?pkName(it,+l.qty):''):l.qty+' '+l.unit}${it&&l.hand!=null?' (in hand '+fq(l.hand,it.unit)+')':''}\n`;});
   if(r.note)t+=`\nOrder notes: ${r.note}\n`;return t.trim();}
 function sendVia(r){sendBox('Send to purchasing — '+r.no,'Stock request '+r.no,reqText(r),S.set.boPhone,S.set.boEmail,()=>defReq(r));}
 let shareTxt='';
@@ -1336,12 +1351,12 @@ function vReq(){const wa=!!waNum(S.set.boPhone),em=EMAIL_RE.test(S.set.boEmail||
   <div class="card"><div class="hd" style="align-items:center"><div><b>Scan items in the store</b><div class="note">Scan the QR label on the shelf, item or lot. The item is added and you type the quantity needed.</div></div>
    <button class="pri big" onclick="scanReq()">Scan</button></div></div>
   <div class="card scroll"><table><thead><tr><th>Item</th><th>In hand</th><th>Qty needed</th><th>Unit</th><th></th></tr></thead><tbody>
-  ${draft.lines.map((l,x)=>{const it=item(l.itemId);return `<tr><td style="min-width:220px"><select onchange="draft.lines[${x}].itemId=this.value;draft.lines[${x}].unit=(item(this.value)||{}).unit||'kg';render()"><option value="">— Item —</option>${itemOpts(l.itemId)}</select></td>
+  ${draft.lines.map((l,x)=>{const it=item(l.itemId);return `<tr><td style="min-width:220px"><select onchange="draft.lines[${x}].itemId=this.value;draft.lines[${x}].unit='pcs';render()"><option value="">— Item —</option>${itemOpts(l.itemId)}</select></td>
    <td style="white-space:nowrap">${it?fq(stat(it).usable,it.unit)+' '+badges(stat(it)):'—'}</td>
    <td style="min-width:110px"><input id="rq${x}" type="number" min="0" step="any" inputmode="decimal" value="${esc(l.qty)}" oninput="draft.lines[${x}].qty=this.value"></td>
-   <td><select onchange="draft.lines[${x}].unit=this.value" style="width:90px">${uOpts(it?iu(it):['kg'],l.unit)}</select></td>
+   <td><select onchange="draft.lines[${x}].unit=this.value" style="width:90px">${uOpts(['pcs'],'pcs',it)}</select></td>
    <td><button class="sm bad" onclick="draft.skip=(draft.skip||[]).concat(draft.lines[${x}].itemId?[draft.lines[${x}].itemId]:[]);draft.lines.splice(${x},1);render()">✕</button></td></tr>`;}).join('')||'<tr><td colspan="5" class="note">No low or out-of-stock items. Add items below or scan them.</td></tr>'}
-  </tbody></table><div class="acts"><button onclick="draft.lines.push({itemId:'',qty:'',unit:'kg'});render()">+ Item</button><button onclick="draft.skip=[];addLow()">Refresh</button></div><div class="note" style="margin-top:6px">+ Item: add another item. Refresh: add low / out-of-stock items again.</div></div>
+  </tbody></table><div class="acts"><button onclick="draft.lines.push({itemId:'',qty:'',unit:'pcs'});render()">+ Item</button><button onclick="draft.skip=[];addLow()">Refresh</button></div><div class="note" style="margin-top:6px">+ Item: add another item. Refresh: add low / out-of-stock items again.</div></div>
   <div class="card form2"><label>Requested by<input value="${esc(draft.by)}" oninput="draft.by=this.value"></label><label>Order notes<input value="${esc(draft.note)}" placeholder="e.g. urgent, deliver before Friday" oninput="draft.note=this.value"></label>
    <div class="acts" style="margin-top:0"><button class="pri" onclick="sendReq()">Send to purchasing</button></div>
    <div class="note" style="margin-top:6px">Send to purchasing: makes the Excel request sheet automatically, saves it in Saved documents and opens WhatsApp / Email with the sheet attached.${wa||em?' Purchasing: '+[S.set.boPhone,S.set.boEmail].filter(Boolean).map(esc).join(' · '):''}</div>
@@ -1368,7 +1383,7 @@ function xlBlobName(d){return d.name;}
 function reqLog(){if(!S.reqs.length)return '<div class="card note">No requests sent yet.</div>';
   return `<div class="card scroll"><table><thead><tr><th>Request no.</th><th>Date</th><th>Items</th><th>Requested by</th><th>Sent by</th><th>Status</th><th></th></tr></thead><tbody>
   ${S.reqs.map(r=>`<tr><td class="mono">${esc(r.no)}</td><td>${fd(r.date)}</td>
-   <td>${r.lines.map(l=>{const it=item(l.itemId);return `<div>${esc(it?it.name:'(item)')} — ${l.unit==='pcs'?l.qty:l.qty+' '+l.unit}</div>`;}).join('')}</td><td>${esc(r.by||'—')}</td><td>${r.via}</td>
+   <td>${r.lines.map(l=>{const it=item(l.itemId);return `<div>${esc(it?it.name:'(item)')} — ${l.unit==='pcs'?l.qty+' '+(it?pkName(it,+l.qty):''):l.qty+' '+l.unit}</div>`;}).join('')}</td><td>${esc(r.by||'—')}</td><td>${r.via}</td>
    <td>${r.status==='Received'?`<span class="badge b-ok">Received ${fd(r.got)}</span>`:'<span class="badge b-warn">Sent</span>'}</td>
    <td style="white-space:nowrap"><button class="sm" onclick="sendVia(S.reqs.find(x=>x.id==='${r.id}'))">Send</button> ${r.status!=='Received'?`<button class="sm" onclick="markGot('${r.id}')">Mark received</button>`:''}</td></tr>`).join('')}
   </tbody></table></div>`;}
@@ -1381,8 +1396,8 @@ function vItems(){return `<h2>Items</h2><div class="acts" style="margin:0 0 12px
   ${S.items.slice().sort((a,b)=>a.sku.localeCompare(b.sku)).map(it=>`<tr class="click" onclick="go('item','${it.id}')"><td class="mono">${esc(it.sku)}</td><td>${esc(it.name)}</td><td>${CATS[it.cat]||''}</td><td>${esc(unitLabel(it))}</td><td class="num">${fq(stat(it).hand,it.unit)}</td><td class="num">${S.lots.filter(l=>l.itemId===it.id&&l.qtyLeft>1e-9).length}</td><td style="white-space:nowrap">${(()=>{const x=stat(it);return x.next?fd(x.next)+expTag(x.next):'—';})()}${stat(it).exp?' <span class="tag bad">expired lot</span>':''}</td><td>${esc((seller(it.seller)||{}).name||'—')}</td><td>${(it.alts||[]).map(seller).filter(Boolean).map(x=>esc(x.name)).join(', ')||'—'}</td></tr>`).join('')}
   </tbody></table></div>`;}
 function canItems(){return AUTH.isAdmin();}
-function vItemEdit(){if(!canItems())return `<div class="card note">Only Admin can add, edit or delete items.</div>`;const nw=param==='new',it0=nw?{name:'',cat:'RM',unit:'pcs',pack:{type:'packet',q:'',u:'kg'},reorder:0,seller:'',alts:[],notes:'',sku:''}:item(param);if(!it0)return nf();
-  const it=itemPre?Object.assign({},it0,{name:itemPre.name||it0.name,unit:itemPre.unit&&nw?itemPre.unit:it0.unit,seller:itemPre.sup||it0.seller}):it0;
+function vItemEdit(){if(!canItems())return `<div class="card note">Only Admin can add, edit or delete items.</div>`;const nw=param==='new',it0=nw?{name:'',cat:'RM',unit:'pcs',pack:{type:'bottle',q:'',u:'g'},reorder:0,seller:'',alts:[],notes:'',sku:''}:item(param);if(!it0)return nf();
+  const it=itemPre?Object.assign({},it0,{name:itemPre.name||it0.name,unit:'pcs',seller:itemPre.sup||it0.seller}):it0;
   const hasLots=!nw&&S.lots.some(l=>l.itemId===it.id);
   return `<h2>${nw?'Add new item':'Edit item'}</h2><div class="card form2">
    <div class="note" style="margin-bottom:8px">Enter the details manually, or scan a product label, invoice or ingredient list to fill them.</div>
@@ -1391,9 +1406,9 @@ function vItemEdit(){if(!canItems())return `<div class="card note">Only Admin ca
    <label>Item name<input id="eN" value="${esc(it.name)}" ${nw?`oninput="$('eS').placeholder=nextSku(this.value)"`:''}></label>
    <label>Category<select id="eC">${Object.entries(CATS).map(([k,v])=>`<option value="${k}" ${k===it.cat?'selected':''}>${v}</option>`).join('')}</select></label>
    <label>SKU / product no.${nw?' — leave blank for an automatic number from the item name initials':''}<input id="eS" value="${esc(it.sku)}" placeholder="${nw?'type the item name first':''}"></label>
-   <label>Stock counted in<select id="eU" ${hasLots?'disabled':''} onchange="$('ePk').hidden=this.value!=='pcs'">${['pcs','g','kg','ml','L'].map(u=>`<option value="${u}" ${u===it.unit?'selected':''}>${u==='pcs'?'Number of packs (no.)':u}</option>`).join('')}</select>${hasLots?'<span class="note">Locked because stock has been received.</span>':''}</label>
-   <div id="ePk" ${it.unit==='pcs'?'':'hidden'}><div class="two"><label>Pack type<select id="ePt">${PACKS.map(x=>`<option ${x===((it.pack||{}).type||'packet')?'selected':''}>${x}</option>`).join('')}</select></label>
-    <label>Pack size<div class="row"><input id="ePq" type="number" min="0" step="any" inputmode="decimal" value="${esc((it.pack||{}).q||'')}" placeholder="e.g. 1"><select id="ePu" style="width:90px">${['g','kg','ml','L'].map(u=>`<option ${u===((it.pack||{}).u||'kg')?'selected':''}>${u}</option>`).join('')}</select></div></label></div></div>
+   <div class="two"><label>Counted in<select id="ePt">${PACKS.map(x=>`<option value="${x}" ${x===pkType(it)?'selected':''}>${x==='no.'?'no. (pieces)':pkName({pack:{type:x}})}</option>`).join('')}</select></label>
+    <label>Contents of one pack<div class="row"><input id="ePq" type="number" min="0" step="any" inputmode="decimal" value="${esc((it.pack||{}).q||'')}" placeholder="e.g. 750"><select id="ePu" style="width:90px">${['g','kg','ml','L'].map(u=>`<option ${u===((it.pack||{}).u||'g')?'selected':''}>${u}</option>`).join('')}</select></div></label></div>
+   <div class="note" style="margin:-4px 0 10px">Stock is counted in bottles, packets, cans, no. and so on. The weight or volume is only what is inside one pack (e.g. 750 ml bottle, 1 kg packet). Leave it empty if not needed.</div>
    <label>Main supplier<select id="eSe"><option value="">—</option>${sellerOpts(it.seller)}</select></label>
    <label>Other suppliers${S.sellers.length?`<div class="chk2">${S.sellers.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(x=>`<label><input type="checkbox" class="altc" value="${x.id}" ${(it.alts||[]).includes(x.id)?'checked':''}>${esc(x.name)}</label>`).join('')}</div>`:'<div class="note">No suppliers yet. Add them in Suppliers.</div>'}</label>
    <label>Notes<input id="eNo" value="${esc(it.notes||'')}"></label>
@@ -1403,10 +1418,10 @@ function saveItem(id){if(!canItems())return toast('Only Admin can add or edit it
   if(sku&&S.items.some(i=>i.sku.toUpperCase()===sku&&i.id!==id))return toast('SKU '+sku+' is already used');
   const main=$('eSe').value,alts=[...document.querySelectorAll('.altc')].filter(c=>c.checked).map(c=>c.value).filter(v=>v!==main);
   const f={name,cat,reorder:id==='new'?0:((item(id)||{}).reorder||0),seller:main,alts,notes:$('eNo').value.trim()};
-  const uSel=$('eU').disabled?(item(id)||{}).unit:$('eU').value;if(uSel==='pcs'){const pq=+$('ePq').value;f.pack=pq>0?{type:$('ePt').value,q:pq,u:$('ePu').value}:null;}
+  const pq=+$('ePq').value;f.unit='pcs';f.pack={type:$('ePt').value,q:pq>0?pq:0,u:$('ePu').value};
   if(id==='new'){if(!sku)sku=takeSku(name);
-    const it={id:rid(),key:null,ini:initials(name),sku,unit:$('eU').value,created:Date.now(),...f};S.items.push(it);save();if(retView==='prodEdit'&&pe){retView=null;pe.lines.push({item:it.id,qty:'',unit:it.unit});go('prodEdit');}else go('item',it.id);toast('Item added: '+sku);}
-  else{const it=item(id);Object.assign(it,f);if(sku)it.sku=sku;if(!$('eU').disabled)it.unit=$('eU').value;save();go('item',id);toast('Item saved');}}
+    const it={id:rid(),key:null,ini:initials(name),sku,created:Date.now(),...f};S.items.push(it);save();if(retView==='prodEdit'&&pe){retView=null;pe.lines.push({item:it.id,qty:'',unit:it.unit});go('prodEdit');}else go('item',it.id);toast('Item added: '+sku);}
+  else{const it=item(id);Object.assign(it,f);if(sku)it.sku=sku;save();go('item',id);toast('Item saved');}}
 async function delItem(id){if(!canItems())return toast('Only Admin can delete items');const it=item(id);if(!(await ask('Delete item '+it.name+'?')))return;S.items=S.items.filter(i=>i.id!==id);save();go('items');}
 
 /* ================= SELLERS ================= */
@@ -1681,7 +1696,7 @@ function useDoc(mode,fn,text){const p=parseDoc(text);
   buildImp(fn,text);go('imp');}
 function fillGrn(fn,p,text){const ex=findSupplier(p);rcv.doc=fn;if(p.inv)rcv.inv=p.inv;if(p.date)rcv.invDate=p.date;
   if(ex){rcv.sup=ex.id;rcv.newSup=null;}else if(p.name||p.phone||p.email)rcv.newSup={name:p.name,phone:p.phone,email:p.email,address:p.address};
-  const add=p.items.map(x=>{const it=item(x.match);return{...blankLine(),item:x.match||'',docName:x.match?'':x.name,qty:String(x.qty),unit:it&&!iu(it).includes(x.unit)?it.unit:x.unit};});
+  const add=p.items.map(x=>{const it=item(x.match);const o={...blankLine(),item:x.match||'',docName:x.match?'':x.name,qty:String(x.qty),unit:'pcs'};if(it&&hasPack(it)&&UF[x.unit]&&UF[x.unit][0]!=='c'){const n=toStk(+x.qty,x.unit,it);if(n>0)o.qty=String(r6(n));}return o;});
   if(add.length)rcv.lines=rcv.lines.filter(l=>l.item||l.qty).concat(add);
   if(!rcv.sup){const it=rcv.lines.map(l=>item(l.item)).find(i=>i&&i.seller);if(it)rcv.sup=it.seller;}
   const unc=scanInfo.unclear.slice(),low=t=>String(t||'').toLowerCase().replace(/\s+/g,' ').trim();
@@ -1799,7 +1814,7 @@ function defLot(l){const it=item(l.itemId);const mv=S.moves.filter(m=>m.lotId===
   return xlDef('Lot-'+l.lot,'Lot '+l.lot,it.name+' · '+it.sku,LOT_COLS,lotRows([l]),LOT_W,[{title:'Movements',sub:'Lot '+l.lot,cols:['Date & time','Type','Qty','Client','Client invoice no.','Reference','By'],rows:mv,widths:[17,16,10,24,18,40,14]}]);}
 function defGrn(g){const sl=seller(g.sup);return xlDef('GRN-'+g.grn,'Goods received note '+g.grn,'Supplier: '+(sl?sl.name:'—')+(g.inv?' · Supplier invoice '+g.inv:''),LOT_COLS,lotRows(g.lots.map(lot).filter(Boolean)),LOT_W);}
 function defReq(r){const cols=['#','SKU','Item','Qty needed','Unit','Usable in hand when sent','Status now'];
-  const rows=r.lines.map((l,i)=>{const it=item(l.itemId),x=it?stat(it):null;return [{v:i+1,s:'int'},XT(it?it.sku:''),XT(it?it.name:'(item)'),XN(l.qty,l.unit),XT(uName(l.unit)),it&&l.hand!=null?XN(l.hand,it.unit):XT(''),XT(x?(x.out?'OUT':x.low?'LOW':'OK'):'')];});
+  const rows=r.lines.map((l,i)=>{const it=item(l.itemId),x=it?stat(it):null;return [{v:i+1,s:'int'},XT(it?it.sku:''),XT(it?it.name:'(item)'),XN(l.qty,l.unit),XT(l.unit==='pcs'&&it?uN(it):uName(l.unit)),it&&l.hand!=null?XN(l.hand,it.unit):XT(''),XT(x?(x.out?'OUT':x.low?'LOW':'OK'):'')];});
   return xlDef('Stock-request-'+r.no,'Stock request '+r.no,'Date '+fd(r.date)+(r.by?' · Requested by '+r.by:'')+(r.note?' · Notes: '+r.note:''),cols,rows,[5,11,34,11,8,14,10]);}
 function defInv(no){const ms=relMoves(no),m=ms[0],c=client(m.client)||{};
   const cols=['#','SKU','Item','Unit','Qty','Our lot no.','Expiry'],rows=[];
@@ -1808,17 +1823,17 @@ function defInv(no){const ms=relMoves(no),m=ms[0],c=client(m.client)||{};
     [{v:'PO number',s:'bold'},XT(m.order)],[{v:'Recipient',s:'bold'},XT(m.recip)],[{v:'Sales person',s:'bold'},XT(m.sales)],[{v:'Handed out by',s:'bold'},XT(m.by)],[{v:'Notes',s:'bold'},XT(m.note)]];
   return xlDef((c.internal?'Production-issue-':'Invoice-')+(m.cinv||no),docWord(c)+' '+(m.cinv||'—'),'Release note '+no+' · '+fdt(m.t),cols,rows.concat(info),[6,11,34,24,10,17,12]);}
 function defRels(){const cols=['Date & time','Invoice / issue no.','Release note','To','PO number','Recipient','Sales person','Item','Qty','Unit','Handed out by'],rows=[];
-  relList().forEach(m=>{const c=client(m.client);relLines(m.rel).forEach(x=>{const it=item(x.itemId)||{name:'',unit:''};rows.push([XDT(m.t),XT(m.cinv),XT(m.rel),XT(c?c.name:'(deleted client)'),XT(m.order),XT(m.recip),XT(m.sales),XT(it.name),XN(x.qty,it.unit),XT(uName(it.unit)),XT(m.by)]);});});
+  relList().forEach(m=>{const c=client(m.client);relLines(m.rel).forEach(x=>{const it=item(x.itemId)||{name:'',unit:''};rows.push([XDT(m.t),XT(m.cinv),XT(m.rel),XT(c?c.name:'(deleted client)'),XT(m.order),XT(m.recip),XT(m.sales),XT(it.name),XN(x.qty,it.unit),XT(it.unit?uN(it):''),XT(m.by)]);});});
   return xlDef('Hand-outs','Hand-outs to clients and in-house production',relList().length+' hand-out(s)',cols,rows,[17,16,14,24,14,18,18,32,9,6,14]);}
 function defClient(c){const cols=['Date & time','Invoice no.','Release note','PO number','Recipient','Sales person','Item','SKU','Qty','Unit'],rows=[];
-  relList(c.id).forEach(m=>relLines(m.rel).forEach(x=>{const it=item(x.itemId)||{name:'',sku:'',unit:''};rows.push([XDT(m.t),XT(m.cinv),XT(m.rel),XT(m.order),XT(m.recip),XT(m.sales),XT(it.name),XT(it.sku),XN(x.qty,it.unit),XT(uName(it.unit))]);}));
+  relList(c.id).forEach(m=>relLines(m.rel).forEach(x=>{const it=item(x.itemId)||{name:'',sku:'',unit:''};rows.push([XDT(m.t),XT(m.cinv),XT(m.rel),XT(m.order),XT(m.recip),XT(m.sales),XT(it.name),XT(it.sku),XN(x.qty,it.unit),XT(it.unit?uN(it):'')]);}));
   return xlDef('Client-'+c.code,'Client '+c.code+' — '+c.name,[c.contact,c.phone,c.email,c.address].filter(Boolean).join(' · ')||'No contact details',cols,rows,[17,16,14,14,18,18,32,10,9,6]);}
 function defHist(){const list=histList(),cols=['Date & time','Type','Item','SKU','Our lot no.','Supplier lot','Supplier','Supplier phone','GRN no.','Invoice no.','Expiry','Qty','Unit','Product','Client','Client invoice no.','Release note no.','Sales person','Reference / reason','By'];
   const rows=xlHead('Stock movement report',histDesc()+' · '+list.length+' movement(s)',cols);
   list.forEach(m=>{const it=item(m.itemId),l=lot(m.lotId),sl=l&&seller(l.seller),rp=m.prod&&recipeById(m.prod),cl=m.client&&client(m.client);
     rows.push([{v:new Date(m.t),t:'dt'},{v:tLabel(m),s:'txt'},{v:it?it.name:'(deleted item)',s:'txt'},{v:it?it.sku:'',s:'txt'},{v:l?l.lot:'',s:'txt'},{v:l&&l.supLot||'',s:'txt'},
       {v:sl?sl.name:'',s:'txt'},{v:sl&&sl.phone||'',s:'txt'},{v:l&&l.grn||'',s:'txt'},{v:l&&l.inv||'',s:'txt'},l&&l.exp?{v:l.exp,t:'d'}:{v:'',s:'txt'},
-      XN(m.qty,it&&it.unit),{v:it?uName(it.unit):'',s:'txt'},{v:rp?rp.name:'',s:'txt'},{v:cl?cl.name:'',s:'txt'},{v:m.cinv||'',s:'txt'},{v:m.rel||'',s:'txt'},{v:m.sales||'',s:'txt'},{v:m.ref||'',s:'txt'},{v:m.by||'',s:'txt'}]);});
+      XN(m.qty,it&&it.unit),{v:it?uN(it):'',s:'txt'},{v:rp?rp.name:'',s:'txt'},{v:cl?cl.name:'',s:'txt'},{v:m.cinv||'',s:'txt'},{v:m.rel||'',s:'txt'},{v:m.sales||'',s:'txt'},{v:m.ref||'',s:'txt'},{v:m.by||'',s:'txt'}]);});
   return{name:xlName('Stock-movements'),title:'Stock movement report',sheets:[{name:'Stock movements',freeze:5,widths:[17,16,30,10,17,14,24,15,16,14,12,11,6,24,24,18,14,18,36,14],rows:rows.concat(xlFoot(cols.length))}]};}
 function xlHist(){saveXl(defHist());}
 function defStock(){const c1=['SKU','Item','Category','Unit','In hand','Usable (not expired)','Reorder level','Status','Next expiry','Lots in stock','Main supplier','Supplier phone','Other suppliers'];
@@ -1832,7 +1847,7 @@ function defStock(){const c1=['SKU','Item','Category','Unit','In hand','Usable (
   const r2=xlHead('Lots in stock','Lots with stock remaining, first expiry first',c2);
   S.lots.filter(l=>l.qtyLeft>1e-9).sort(fefo).forEach(l=>{const it=item(l.itemId)||{name:'',sku:'',unit:''},sl=seller(l.seller);
     r2.push([{v:l.lot,s:'txt'},{v:it.name,s:'txt'},{v:it.sku,s:'txt'},{v:sl?sl.name:'',s:'txt'},{v:l.supLot||'',s:'txt'},{v:l.grn||'',s:'txt'},{v:l.inv||'',s:'txt'},
-      {v:l.recv,t:'d'},l.exp?{v:l.exp,t:'d'}:{v:'',s:'txt'},XN(l.qtyIn,it.unit),XN(l.qtyLeft,it.unit),{v:uName(it.unit),s:'txt'}]);});
+      {v:l.recv,t:'d'},l.exp?{v:l.exp,t:'d'}:{v:'',s:'txt'},XN(l.qtyIn,it.unit),XN(l.qtyLeft,it.unit),{v:it.unit?uN(it):'',s:'txt'}]);});
   return{name:xlName('Stock-in-hand'),title:'Stock in hand report',sheets:[{name:'Stock in hand',freeze:5,widths:[11,32,14,20,9,10,9,20,12,7,22,15,24],rows:r1.concat(xlFoot(c1.length))},
     {name:'Lots in stock',freeze:5,widths:[17,32,10,24,14,16,14,12,12,12,11,6],rows:r2.concat(xlFoot(c2.length))}]};}
 function xlStock(){saveXl(defStock());}
