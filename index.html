@@ -556,45 +556,49 @@ var AUTH=(function(){
   function isAdmin(){return !!cur&&level(cur.role)>=2;}
   function isDev(){return !!cur&&level(cur.role)>=3;}
   var LV={user:1,admin:2,dev:3},SCR={1:'User',2:'Admin',3:'Developer'};
-  function openOn(){try{var v=localStorage.getItem(cfg.key+'_open');if(v==='1')return true;if(v==='0')return false;}catch(x){}return !!cfg.open;}
-  function setOpen(on){if(!isDev())return;try{localStorage.setItem(cfg.key+'_open',on?'1':'0');}catch(x){}}
+  function openOn(){if(cfg&&cfg.client)return false;try{var v=localStorage.getItem(cfg.key+'_open');if(v==='1')return true;if(v==='0')return false;}catch(x){}return !!cfg.open;}
+  function setOpen(on){if(!isDev()||(cfg&&cfg.client))return;try{localStorage.setItem(cfg.key+'_open',on?'1':'0');}catch(x){}}
   function msg(t,ok){var m=g('gmsg');if(m){m.textContent=t;m.style.color=ok?'var(--ok)':'var(--bad)';}}
   function foot(){return '<div class="gfoot"><div><b>'+DEV+'</b><br>'+PHONE+' · '+MAIL+'</div><div class="gdisc">'+DISC+'</div></div>';}
   function brand(){return (cfg.vldLogo&&cfg.vldLogo.indexOf('data:')===0?'<div class="gvlogo"><img src="'+cfg.vldLogo+'" alt="'+DEV+'"></div>':'<div class="gtop">'+DEV+'</div>')+
     (cfg.logo?'<div class="glogo"><img src="'+cfg.logo+'" alt="'+e(cfg.product)+'"></div>':'<div class="gname">'+e(cfg.product)+'</div>')+
-    (canSave()?'':'<div class="gwarn">This view cannot save data. Download the file and open it in Chrome to keep your accounts and stock records.</div>')+'<div class="gapp">'+e(cfg.app)+'</div><div class="gver">'+ver()+'</div><div class="gdev">'+PHONE+' · '+MAIL+'</div>';}
+    (canSave()?'':'<div class="gwarn">This view cannot save data. Download the file and open it in Chrome to keep your accounts and stock records.</div>')+'<div class="gapp">'+e(cfg.app)+'</div><div class="gver" id="gver">'+ver()+'</div>'+(cfg.demo?'<div class="gdemo">'+e(cfg.demo)+'</div>':'')+'<div class="gdev">'+PHONE+' · '+MAIL+'</div>';}
   /* --- screens --- */
   function show(){var gt=g('gate');gt.hidden=false;g('app').hidden=true;}
   function splash(){show();g('gate').innerHTML='<div class="gbox">'+brand()+'<div class="gload"><i></i></div></div>'+foot();
     var t=setTimeout(loginScreen,2200);g('gate').onclick=function(){clearTimeout(t);loginScreen();};}
   var mode=null; /* 'user', 'admin' or 'dev' sign-in screen */
   /* open access: Sign in with empty username and password (cfg.open, or switched by the developer in Developer tools) */
+  function devAcc(){return {id:'vld-dev',name:DEV,user:'vld-dev',role:'Developer',active:true};}
+  function devOk(p){return !!(cfg.devSalt&&p&&kdf(cfg.devSalt,p)===cfg.devHash);}
   function openAcc(m){var r=m==='dev'?'Developer':m==='admin'?'Administrator':uRoles()[0];return {id:'open-'+(m||'user'),name:r,user:'open-'+(m||'user'),role:r,active:true};}
-  function loginScreen(){var gt=g('gate');gt.onclick=null;var first=!openOn()&&!users().length;
+  function loginScreen(){var gt=g('gate');gt.onclick=null;var first=!openOn()&&!users().length&&!(cfg.client&&mode==='dev');
     if(!first&&!mode){gt.innerHTML='<div class="gbox">'+brand()+'<div class="gform gchoose"><h3>Sign in as</h3>'+
       '<button class="pri big" type="button" id="gUsr">User<span class="gsub">'+e(uRoles().join(' / '))+'</span></button>'+
       '<button class="big" type="button" id="gAdm">Admin<span class="gsub">Client administrator</span></button>'+
-      '<button class="big" type="button" id="gDev">Developer<span class="gsub">Full access</span></button></div></div>'+foot();
-      g('gUsr').onclick=function(){mode='user';loginScreen();};g('gAdm').onclick=function(){mode='admin';loginScreen();};g('gDev').onclick=function(){mode='dev';loginScreen();};return;}
+      (cfg.client?'':'<button class="big" type="button" id="gDev">Developer<span class="gsub">Full access</span></button>')+'</div></div>'+foot();
+      g('gUsr').onclick=function(){mode='user';loginScreen();};g('gAdm').onclick=function(){mode='admin';loginScreen();};if(g('gDev'))g('gDev').onclick=function(){mode='dev';loginScreen();};devTap();return;}
     gt.innerHTML='<div class="gbox">'+brand()+'<div class="gform" id="gf">'+
-      (first?'<h3>Create the developer account</h3><div class="note">This is the first start. Set the username and password of the developer. Keep them safe.</div>'+
+      (first?(cfg.client?'<h3>Create the Admin account</h3><div class="note">This is the first start. Set the username and password of the client administrator. Keep them safe.</div>':'<h3>Create the developer account</h3><div class="note">This is the first start. Set the username and password of the developer. Keep them safe.</div>')+
         '<label>Full name<input id="gn" required></label>':'<h3>'+SCR[LV[mode]]+' sign in</h3>')+
-      '<label>Username<input id="gu" autocapitalize="none" autocomplete="username" required></label>'+
+      (cfg.client&&mode==='dev'&&!first?'':'<label>Username<input id="gu" autocapitalize="none" autocomplete="username" required></label>')+
       '<label>Password<input id="gp" type="password" autocomplete="'+(first?'new-password':'current-password')+'" required></label>'+
       (first?'<label>Repeat password<input id="gp2" type="password" autocomplete="new-password" required></label>':'')+
       (openOn()&&!first?'<div class="note">Open access: leave username and password empty and tap Sign in.</div>':'')+'<div id="gmsg" class="gmsg"></div><button class="pri big" type="button" id="gbtn">'+(first?'Create and sign in':'Sign in')+'</button>'+
-      (first?'':'<button class="gback" type="button" id="gBack">← Sign in as</button>')+'</div></div>'+foot();
+      (first?'':'<button class="gback" type="button" id="gBack">← Sign in as</button>')+'</div></div>'+foot();if(first)devTap();
     if(!first)g('gBack').onclick=function(){mode=null;loginScreen();};
     var run=function(){first?setup():signIn();};g('gbtn').onclick=run;
     Array.prototype.forEach.call(g('gf').querySelectorAll('input'),function(i){i.onkeydown=function(ev){if(ev.key==='Enter'){ev.preventDefault();run();}};});
-    setTimeout(function(){var f=g(first?'gn':'gu');if(f&&f.focus)f.focus();},50);}
+    setTimeout(function(){var f=g(first?'gn':'gu')||g('gp');if(f&&f.focus)f.focus();},50);}
+  var taps=0,tapT=0;function devTap(){var v=g('gver');if(!cfg.client||!v)return;v.onclick=function(ev){ev.stopPropagation();clearTimeout(tapT);tapT=setTimeout(function(){taps=0;},1500);if(++taps>=5){taps=0;mode='dev';loginScreen();}};}
   function setup(){var n=g('gn').value.trim(),u=g('gu').value.trim().toLowerCase(),p=g('gp').value,p2=g('gp2').value;
     var bad=check(n,u,p,p2);if(bad)return msg(bad);var s=salt();
-    saveUsers([{id:Date.now().toString(36),name:n,user:u,role:'Developer',salt:s,hash:hash(p,s),active:true,created:Date.now()}]);
-    finish(users()[0]);}
+    saveUsers([{id:Date.now().toString(36),name:n,user:u,role:cfg.client?'Administrator':'Developer',salt:s,hash:hash(p,s),active:true,created:Date.now()}]);
+    finish(users()[0]);if(cfg.refresh)setTimeout(cfg.refresh,0);}
   function check(n,u,p,p2){if(!n)return 'Enter the full name.';if(!/^[a-z0-9._-]{3,20}$/.test(u))return 'Username: 3 to 20 letters or numbers, no spaces.';
     if(p.length<6)return 'Password: at least 6 characters.';if(p2!==undefined&&p!==p2)return 'The two passwords do not match.';return '';}
   function signIn(){var now=Date.now();if(now<lockUntil)return msg('Too many wrong attempts. Try again in '+Math.ceil((lockUntil-now)/1000)+' seconds.');
+    if(cfg.client&&mode==='dev'){var dp=g('gp').value;if(!devOk(dp)){fails++;if(fails>=5){lockUntil=now+60000;fails=0;}return msg('Wrong password.');}fails=0;return finish(devAcc());}
     var u=g('gu').value.trim().toLowerCase(),p=g('gp').value,x=users().filter(function(z){return z.user===u;})[0];
     if(openOn()&&!u&&!p){fails=0;return finish(openAcc(mode));}
     if(!x||x.hash!==hash(p,x.salt)){fails++;if(fails>=5){lockUntil=now+60000;fails=0;}return msg('Wrong username or password.');}
@@ -602,17 +606,17 @@ var AUTH=(function(){
     if(level(x.role)!==LV[mode])return msg('This is a '+x.role+' account. Use '+SCR[level(x.role)]+' sign in.');
     fails=0;finish(x);}
   function finish(x){cur=x;setSess(x.user);g('gate').hidden=true;g('app').hidden=false;bar();if(cfg.onLogin)cfg.onLogin(x);}
-  function bar(){var b=g('hbar');if(b)b.innerHTML='<span class="hver">'+ver()+'</span><button class="sm" onclick="AUTH.logout()">Log out</button>';}
+  function bar(){var b=g('hbar');if(b)b.innerHTML='<span class="hver">'+ver()+'</span>'+(cfg.demo?'<span class="hdemo">'+e(cfg.demo)+'</span>':'')+'<button class="sm" onclick="AUTH.logout()">Log out</button>';}
   function logout(){if(G){cur=null;return toGate();}cur=null;mode=null;setSess(null);loginScreen();show();if(cfg.onLogout)cfg.onLogout();}
   /* --- users (Admin and Developer) and own password (everyone) --- */
-  function accountPanel(){if(!cur)return '';if(/^open-/.test(cur.user))return '<h2>My account</h2><div class="card note">Signed in with open access as '+e(cur.role)+'.'+(isAdmin()?' Add user logins under + User.':'')+'</div>';return '<h2>My account</h2><div class="card form2"><div class="note" style="margin-bottom:8px">Signed in as <b>'+e(cur.name)+'</b> ('+e(cur.user)+') · '+e(cur.role)+'</div>'+
+  function accountPanel(){if(!cur)return '';if(cur.user==='vld-dev')return '<h2>My account</h2><div class="card note">Signed in as Developer ('+DEV+').</div>';if(/^open-/.test(cur.user))return '<h2>My account</h2><div class="card note">Signed in with open access as '+e(cur.role)+'.'+(isAdmin()?' Add user logins under + User.':'')+'</div>';return '<h2>My account</h2><div class="card form2"><div class="note" style="margin-bottom:8px">Signed in as <b>'+e(cur.name)+'</b> ('+e(cur.user)+') · '+e(cur.role)+'</div>'+
     '<div class="two"><label>Current password<input id="ap0" type="password" autocomplete="current-password"></label><label>New password<input id="ap1" type="password" autocomplete="new-password"></label></div>'+
     '<button class="pri" onclick="AUTH.changePw()">Change password</button><div id="amsg" class="gmsg"></div></div>';}
   function changePw(){var a=g('amsg'),p0=g('ap0').value,p1=g('ap1').value,us=users(),x=us.filter(function(z){return z.user===cur.user;})[0];
     if(!x||x.hash!==hash(p0,x.salt)){a.style.color='var(--bad)';a.textContent='The current password is wrong.';return;}
     if(p1.length<6){a.style.color='var(--bad)';a.textContent='New password: at least 6 characters.';return;}
     x.salt=salt();x.hash=hash(p1,x.salt);saveUsers(us);keyPut(x.user,p1,x.role,x.active);cur=x;g('ap0').value='';g('ap1').value='';a.style.color='var(--ok)';a.textContent='Password changed.';}
-  function roleOpts(){return uRoles().concat(['Administrator']).concat(isDev()?['Developer']:[]);}
+  function roleOpts(){return uRoles().concat(['Administrator']).concat(isDev()&&!cfg.client?['Developer']:[]);}
   function canManage(x){return isAdmin()&&x.user!==cur.user&&(isDev()||level(x.role)<3);}
   function usersPanel(){if(!cur)return '';
     if(!isAdmin())return '<h2>Users</h2><div class="card note">Only Admin or Developer can add users.</div>';
@@ -662,7 +666,7 @@ var AUTH=(function(){
         cur=y;setSess(y.user);g('gate').hidden=true;g('app').hidden=false;bar();if(cfg.onLogin)cfg.onLogin(y);return;}
       var sz=getSess(),xz=sz&&users().filter(function(z){return z.user===sz&&z.active;})[0];if(!xz)return toGate();
       cur=xz;g('gate').hidden=true;g('app').hidden=false;bar();if(cfg.onLogin)cfg.onLogin(xz);return;}
-    var su=getSess(),x=su&&users().filter(function(z){return z.user===su&&z.active;})[0];if(!x&&openOn()&&/^open-(user|admin|dev)$/.test(su||''))x=openAcc(su.slice(5));
+    var su=getSess(),x=su&&users().filter(function(z){return z.user===su&&z.active;})[0];if(!x&&openOn()&&/^open-(user|admin|dev)$/.test(su||''))x=openAcc(su.slice(5));if(!x&&cfg.client&&su==='vld-dev')x=devAcc();
     if(x){cur=x;g('gate').hidden=true;g('app').hidden=false;bar();if(cfg.onLogin)cfg.onLogin(x);return;}
     splash();}
   return{eyeify:eyeify,init:init,logout:logout,user:function(){return cur;},isAdmin:isAdmin,isDev:isDev,openOn:openOn,setOpen:setOpen,users:users,accountPanel:accountPanel,usersPanel:usersPanel,changePw:changePw,add:add,toggle:toggle,reset:reset,del:del,
@@ -1277,10 +1281,16 @@ async function docDel(id){const db=await idb();await new Promise((ok,no)=>{const
 async function autoBackup(){try{const all=await docAll(),bk=all.filter(d=>d.kind==='backup');if(bk.some(d=>new Date(d.t).toDateString()===new Date().toDateString()))return;
   await docPut('Backup-'+today()+'.json',new Blob([JSON.stringify(S)],{type:'application/json'}),'backup');for(const d of bk.slice(29))await docDel(d.id);}catch(e){}}
 async function shareFile(file,subject,app,phone,email){if(file.name===savedOnce)savedOnce='';else docPut(file.name,file);
-  if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:subject});toast('Sent: '+file.name);}catch(e){if(e&&e.name!=='AbortError')toast('Could not share: '+(e.message||e));}return;}
-  saveFile(file.name,file);const n=waNum(phone||''),em=(email||'').trim();
-  if(app==='wa')window.open('https://wa.me/'+(n||''),'_blank','noopener');else if(app==='mail')window.open('mailto:'+encodeURIComponent(em).replace(/%40/g,'@')+'?subject='+encodeURIComponent(subject+' — '+S.set.biz),'_blank','noopener');
-  toast('This device cannot attach files directly. The file is saved — attach it in '+(app==='wa'?'WhatsApp':app==='mail'?'the email':'the message')+'.');}
+  if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:subject});toast('Sent: '+file.name);return;}
+    catch(e){if(e&&e.name==='AbortError')return;if(!(e&&e.name==='NotAllowedError'))return toast('Could not share: '+(e.message||e));}}
+  /* the phone does not allow this file type to be attached directly (Chrome on Android: Excel files) — save it and let the user attach it */
+  await saveFile(file.name,file);attachBox(file.name,subject,app,phone,email);}
+function attachBox(name,subject,app,phone,email){const n=waNum(phone||''),em=(email||'').trim();
+  const wa='https://wa.me/'+(n||''),ml='mailto:'+encodeURIComponent(em).replace(/%40/g,'@')+'?subject='+encodeURIComponent(subject+' — '+S.set.biz);
+  showModal(`<h3>Attach the file</h3><div class="note" style="margin-bottom:10px">This phone does not let ${/\.xlsx$/i.test(name)?'Excel files':'this file type'} be attached automatically. The file is saved in the phone's <b>Downloads</b> folder:</div>
+   <div class="card mono" style="margin:0 0 10px;padding:10px 12px">${esc(name)}</div>
+   <div class="note" style="margin-bottom:10px">${app==='mail'?'Tap <b>Open Email</b>, then tap 📎 Attach → Downloads → choose the file.':'Tap <b>Open WhatsApp</b>, then in the chat tap 📎 → <b>Document</b> → Downloads → choose the file.'}${/\.xlsx$/i.test(name)?' PDF and Image are attached automatically.':''}</div>
+   <div class="acts">${app==='mail'?`<a class="btn pri" href="${esc(ml)}" onclick="hideModal()">Open Email</a>`:`<a class="btn pri" href="${esc(wa)}" target="_blank" rel="noopener" onclick="hideModal()">Open WhatsApp</a>`}<button onclick="hideModal()">Close</button></div>`);}
 let sendCtx=null;
 function sendBox(title,subject,text,phone,email,xlf,fmt){const def=xlf?xlf():null;if(!def)return toast('Nothing to send');sendCtx={def,subject,phone:phone||'',email:email||'',fmt:fmt||'xlsx'};drawSend(title);}
 function drawSend(title){const c=sendCtx,base=c.def.name.replace(/\.xlsx$/,''),nm={xlsx:base+'.xlsx',pdf:base+'.pdf',png:base+'.png'}[c.fmt];
@@ -1363,8 +1373,8 @@ function reqLog(){if(!S.reqs.length)return '<div class="card note">No requests s
 function markGot(id){const r=S.reqs.find(x=>x.id===id);r.status='Received';r.got=today();save();render();toast('Marked received. Receive each item in Receive to create lots.');}
 
 /* ================= ITEMS ================= */
-function vItems(){return `<h2>Items</h2><div class="acts" style="margin:0 0 12px">${canItems()?`<button class="pri" onclick="go('itemEdit','new')">+ Item</button>`:''}<button class="pri" onclick="openScan()">Scan</button><button onclick="labelPng(S.items.slice().sort((a,b)=>a.sku.localeCompare(b.sku)).map(itemLabelData),'Item-labels.png')">QR labels</button><button onclick="sendBox('Send items list','Items list',itemsText(),'','',defItems)">Send</button></div>
-  <div class="note" style="margin:-4px 0 12px">${canItems()?'+ Item: add a new item. ':''}Scan: open an item by its QR label. QR labels: print labels for all items. Send: items list as a file by WhatsApp / email.</div>
+function vItems(){return `<h2>Items</h2><div class="acts" style="margin:0 0 12px">${canItems()?`<button class="pri" onclick="go('itemEdit','new')">+ New</button>`:''}<button class="pri" onclick="openScan()">Scan</button><button onclick="labelPng(S.items.slice().sort((a,b)=>a.sku.localeCompare(b.sku)).map(itemLabelData),'Item-labels.png')">QR labels</button><button onclick="sendBox('Send items list','Items list',itemsText(),'','',defItems)">Send</button></div>
+  <div class="note" style="margin:-4px 0 12px">${canItems()?'+ New: add a new item. ':''}Scan: open an item by its QR label. QR labels: print labels for all items. Send: items list as a file by WhatsApp / email.</div>
   <div class="card scroll"><table><thead><tr><th>SKU</th><th>Item</th><th>Category</th><th>Unit</th><th>In hand</th><th>Lots in stock</th><th>Next expiry</th><th>Main supplier</th><th>Other suppliers</th></tr></thead><tbody>
   ${S.items.slice().sort((a,b)=>a.sku.localeCompare(b.sku)).map(it=>`<tr class="click" onclick="go('item','${it.id}')"><td class="mono">${esc(it.sku)}</td><td>${esc(it.name)}</td><td>${CATS[it.cat]||''}</td><td>${esc(unitLabel(it))}</td><td class="num">${fq(stat(it).hand,it.unit)}</td><td class="num">${S.lots.filter(l=>l.itemId===it.id&&l.qtyLeft>1e-9).length}</td><td style="white-space:nowrap">${(()=>{const x=stat(it);return x.next?fd(x.next)+expTag(x.next):'—';})()}${stat(it).exp?' <span class="tag bad">expired lot</span>':''}</td><td>${esc((seller(it.seller)||{}).name||'—')}</td><td>${(it.alts||[]).map(seller).filter(Boolean).map(x=>esc(x.name)).join(', ')||'—'}</td></tr>`).join('')}
   </tbody></table></div>`;}
@@ -1530,7 +1540,7 @@ async function fillDocs(){const box=$('docsBox');if(!box)return;const all=await 
   if(!all.length){box.className='card note';box.innerHTML='No saved documents yet.';return;}
   box.className='card scroll';box.innerHTML=`<table><thead><tr><th>Date &amp; time</th><th>File</th><th>Type</th><th>Size</th><th>By</th><th></th></tr></thead><tbody>${all.slice(0,200).map(d=>`<tr><td style="white-space:nowrap">${fdt(d.t)}</td><td class="mono">${esc(d.name)}</td><td>${d.kind==='backup'?'Data backup':esc((d.name.split('.').pop()||'').toUpperCase())}</td><td>${(d.size/1024).toFixed(1)} KB</td><td>${esc(d.by||'')}</td>
    <td style="white-space:nowrap"><button class="sm" onclick="docShare('${d.id}')">Send</button> <button class="sm" onclick="docSave('${d.id}')">Save</button>${d.kind==='backup'&&AUTH.isAdmin()?` <button class="sm" onclick="docRestore('${d.id}')">Restore</button>`:''}${AUTH.isAdmin()?` <button class="sm bad" onclick="docRemove('${d.id}')">Delete</button>`:''}</td></tr>`).join('')}</tbody></table>`;}
-async function docShare(id){const d=await docGet(id);if(!d)return;const f=new File([d.blob],d.name,{type:d.type});if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:d.name});}catch(e){}}else{saveFile(d.name,f);toast('This device cannot attach files directly. The file is saved — attach it in WhatsApp or email.');}}
+async function docShare(id){const d=await docGet(id);if(!d)return;const f=new File([d.blob],d.name,{type:d.type});if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:d.name});}catch(e){if(e&&e.name==='NotAllowedError'){await saveFile(d.name,f);attachBox(d.name,d.name,'wa','','');}}}else{saveFile(d.name,f);toast('This device cannot attach files directly. The file is saved — attach it in WhatsApp or email.');}}
 async function docSave(id){const d=await docGet(id);if(d)saveFile(d.name,d.blob);}
 async function docRemove(id){if(!AUTH.isAdmin())return;if(!(await ask('Delete this saved document?')))return;await docDel(id);fillDocs();}
 async function docRestore(id){if(!AUTH.isAdmin())return;const d=await docGet(id);if(!d)return;if(!(await ask('Replace all current data with the backup '+d.name+'?')))return;
