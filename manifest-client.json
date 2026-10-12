@@ -1,2 +1,2 @@
-{"name":"InvenioStox Demo","short_name":"InvenioStox","id":"client.html","start_url":"client.html","scope":"./","display":"standalone","background_color":"#0b3438","theme_color":"#0b3438",
+{"name":"OptiStox Demo","short_name":"OptiStox","id":"client.html","start_url":"client.html","scope":"./","display":"standalone","background_color":"#0b3438","theme_color":"#0b3438",
 "icons":[{"src":"icon-192.png","sizes":"192x192","type":"image/png","purpose":"any"},{"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any"},{"src":"icon-maskable.png","sizes":"512x512","type":"image/png","purpose":"maskable"}]}
