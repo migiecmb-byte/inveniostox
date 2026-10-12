@@ -45,6 +45,7 @@ label.inl{display:flex;align-items:center;gap:8px;margin:0 0 8px}
 label.inl input{width:22px;min-height:0;margin:0;accent-color:var(--gold)}
 .form2{max-width:640px}
 .row{display:flex;align-items:center;gap:10px}
+.ucard{display:grid;gap:6px}.ucard .uhd{display:flex;justify-content:space-between;align-items:center;gap:8px}.ucard .acts{margin:4px 0 0;flex-wrap:wrap}.ucard .acts button{min-width:0;flex:1}
 #mbody{position:relative}#mbody .mx{position:absolute;top:0;right:0;min-width:0;width:40px;min-height:40px;padding:0;font-size:18px;line-height:1}#mbody h3{padding-right:40px}
 input.need,select.need{border-color:var(--warn)!important;background:#3d3208!important}
 .srow input{flex:1;min-width:0}
@@ -630,10 +631,10 @@ var AUTH=(function(){
       '<div class="two"><label>Login password<input id="up" type="password" autocomplete="new-password" placeholder="at least 6 characters"></label><label>Sign-in level / role<select id="ur">'+roleOpts().map(function(r){return '<option value="'+r+'">'+(level(r)===1?'User — ':level(r)===2?'Admin — ':'Developer — ')+r+'</option>';}).join('')+'</select></label></div>'+
       '<button class="pri" type="button" id="uadd" onclick="AUTH.add()">+ User</button><div id="umsg" class="gmsg"></div>'+
       '<div class="note">Username: 3 to 20 letters or numbers, no spaces. Users (Storekeeper / Manager) work with stock; Admin can also add, edit and delete items, manage users and settings; Developer has full access.</div></div>'+
-      '<div class="card scroll"><table><thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Status</th><th></th></tr></thead><tbody>'+
-      us.map(function(x){return '<tr><td>'+e(x.name)+'</td><td class="mono">'+e(x.user)+'</td><td>'+e(x.role)+'</td><td>'+(x.active?'<span class="badge b-ok">Active</span>':'<span class="badge b-bad">Disabled</span>')+'</td>'+
-        '<td style="white-space:nowrap">'+(x.user===cur.user?'<span class="note">You</span>':canManage(x)?'<button class="sm" onclick="AUTH.toggle(\''+x.id+'\')">'+(x.active?'Disable':'Enable')+'</button> <button class="sm" onclick="AUTH.reset(\''+x.id+'\')">Reset</button> <button class="sm bad" onclick="AUTH.del(\''+x.id+'\')">Delete</button>':'')+'</td></tr>';}).join('')+
-      '</tbody></table>'+(us.length?'':'<div class="note" style="margin-top:8px">No user logins yet. Fill in the form above and tap + User.</div>')+'</div>';}
+      us.map(function(x){return '<div class="card ucard"><div class="uhd"><b>'+e(x.name)+'</b>'+(x.active?'<span class="badge b-ok">Active</span>':'<span class="badge b-bad">Disabled</span>')+'</div>'+
+        '<div class="note">Username <span class="mono">'+e(x.user)+'</span> · '+e(SCR[level(x.role)])+' — '+e(x.role)+'</div>'+
+        (x.user===cur.user?'<div class="note">This is you.</div>':canManage(x)?'<div class="acts"><button class="sm" onclick="AUTH.toggle(\''+x.id+'\')">'+(x.active?'Disable':'Enable')+'</button><button class="sm" onclick="AUTH.reset(\''+x.id+'\')">Reset</button><button class="sm bad" onclick="AUTH.del(\''+x.id+'\')">Delete</button></div>':'')+'</div>';}).join('')+
+      (us.length?'':'<div class="card note">No user logins yet. Fill in the form above and tap + User.</div>');}
   function umsg(t,ok){var m=g('umsg');if(m){m.textContent=t;m.style.color=ok?'var(--ok)':'var(--bad)';}}
   function add(){if(!isAdmin())return;var n=g('un').value.trim(),u=g('uu').value.trim().toLowerCase(),p=g('up').value,r=g('ur').value,us=users();
     var bad=check(n,u,p);if(bad)return umsg(bad);if(/^open-/.test(u)||us.some(function(z){return z.user===u;}))return umsg('That username is already used.');
@@ -1555,8 +1556,9 @@ function saveSet(){if(!AUTH.isAdmin())return;const e=$('tBE').value.trim();if(e&
   S.set={biz:$('tB').value.trim()||'MCR Concept',boPhone:$('tBP').value.trim(),boEmail:e,cc:$('tC').value.replace(/\D/g,'')||'94',warn:Math.max(1,+$('tW').value||30)};save();render();toast('Settings saved');}
 async function fillDocs(){const box=$('docsBox');if(!box)return;const all=await docAll();if(!$('docsBox'))return;
   if(!all.length){box.className='card note';box.innerHTML='No saved documents yet.';return;}
-  box.className='card scroll';box.innerHTML=`<table><thead><tr><th>Date &amp; time</th><th>File</th><th>Type</th><th>Size</th><th>By</th><th></th></tr></thead><tbody>${all.slice(0,200).map(d=>`<tr><td style="white-space:nowrap">${fdt(d.t)}</td><td class="mono">${esc(d.name)}</td><td>${d.kind==='backup'?'Data backup':esc((d.name.split('.').pop()||'').toUpperCase())}</td><td>${(d.size/1024).toFixed(1)} KB</td><td>${esc(d.by||'')}</td>
-   <td style="white-space:nowrap"><button class="sm" onclick="docShare('${d.id}')">Send</button> <button class="sm" onclick="docSave('${d.id}')">Save</button>${d.kind==='backup'&&AUTH.isAdmin()?` <button class="sm" onclick="docRestore('${d.id}')">Restore</button>`:''}${AUTH.isAdmin()?` <button class="sm bad" onclick="docRemove('${d.id}')">Delete</button>`:''}</td></tr>`).join('')}</tbody></table>`;}
+  box.className='';box.innerHTML=all.slice(0,200).map(d=>`<div class="card ucard"><div class="uhd"><b class="mono" style="min-width:0;overflow-wrap:anywhere">${esc(d.name)}</b><span class="badge">${d.kind==='backup'?'Backup':esc((d.name.split('.').pop()||'').toUpperCase())}</span></div>
+   <div class="note">${fdt(d.t)} · ${(d.size/1024).toFixed(1)} KB${d.by?' · '+esc(d.by):''}</div>
+   <div class="acts"><button class="sm" onclick="docShare('${d.id}')">Send</button><button class="sm" onclick="docSave('${d.id}')">Save</button>${d.kind==='backup'&&AUTH.isAdmin()?`<button class="sm" onclick="docRestore('${d.id}')">Restore</button>`:''}${AUTH.isAdmin()?`<button class="sm bad" onclick="docRemove('${d.id}')">Delete</button>`:''}</div></div>`).join('');}
 async function docShare(id){const d=await docGet(id);if(!d)return;const f=new File([d.blob],d.name,{type:d.type});if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:d.name});}catch(e){if(e&&e.name==='NotAllowedError'){await saveFile(d.name,f);attachBox(d.name,d.name,'wa','','');}}}else{saveFile(d.name,f);toast('This device cannot attach files directly. The file is saved — attach it in WhatsApp or email.');}}
 async function docSave(id){const d=await docGet(id);if(d)saveFile(d.name,d.blob);}
 async function docRemove(id){if(!AUTH.isAdmin())return;if(!(await ask('Delete this saved document?')))return;await docDel(id);fillDocs();}
