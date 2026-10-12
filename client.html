@@ -45,6 +45,7 @@ label.inl{display:flex;align-items:center;gap:8px;margin:0 0 8px}
 label.inl input{width:22px;min-height:0;margin:0;accent-color:var(--gold)}
 .form2{max-width:640px}
 .row{display:flex;align-items:center;gap:10px}
+#mbody{position:relative}#mbody .mx{position:absolute;top:0;right:0;min-width:0;width:40px;min-height:40px;padding:0;font-size:18px;line-height:1}#mbody h3{padding-right:40px}
 input.need,select.need{border-color:var(--warn)!important;background:#3d3208!important}
 .srow input{flex:1;min-width:0}
 .row select,.row input{flex:1 1 auto;min-width:0;width:auto}
@@ -212,7 +213,7 @@ select:not([multiple]){pointer-events:none}
   <button data-v="stock" onclick="go('stock')">Stock</button>
   <button data-v="recv" onclick="go('recv')">Receive</button>
   <button data-v="issue" onclick="go('issue')">Hand out</button>
-  <button data-v="req" onclick="go('req')">Stock Request</button>
+  <button data-v="req" onclick="go('req')">Stock request</button>
   <button data-v="items" onclick="go('items')">Items</button>
   <button data-v="sellers" onclick="go('sellers')">Suppliers</button>
   <button data-v="clients" onclick="go('clients')">Clients</button>
@@ -220,7 +221,7 @@ select:not([multiple]){pointer-events:none}
   <button data-v="scan" onclick="go('scan')">Scan</button>
   <button data-v="set" onclick="go('set')">Settings</button>
 </nav>
-<div id="viewerNote" class="vnote" hidden>Camera, scan and file upload are switched off in this viewer. To use Scan, Scan Invoice and Attach file, open <b>OptiStox</b> in <b>Chrome</b>.</div>
+<div id="viewerNote" class="vnote" hidden>Camera, scan and file upload are switched off in this viewer. To use Scan, Scan invoice and Attach file, open <b>OptiStox</b> in <b>Chrome</b>.</div>
 <main id="main"></main>
 <footer>
   <div class="nm">Vanguard Logic Development<div class="ct">+94 771 512 933 · migiecmb@gmail.com · oX 1.0.0 wh</div></div>
@@ -516,11 +517,11 @@ var XL=(function(){
   function download(name,sheets,title){var b=build(sheets,title),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(a.href);},3000);}
   return{build:build,download:download};
 })();
-/* ===== VLD iS 1.0.0 — start-up screen, sign-in and user accounts (shared by the Store and Production apps) =====
+/* ===== OptiStox oX 1.0.0 — start-up screen, sign-in and user accounts (shared by the Store and Production apps) =====
    Passwords are never stored: only a salted SHA-256 hash. Roles: User (Storekeeper / Manager), Admin (Administrator), Developer. */
 var AUTH=(function(){
   var cfg=null,cur=null,fails=0,lockUntil=0;
-  var VER='VLD iS 1.0.0',DEV='Vanguard Logic Development',PHONE='+94 771 512 933',MAIL='migiecmb@gmail.com',
+  var VER='oX 1.0.0',DEV='Vanguard Logic Development',PHONE='+94 771 512 933',MAIL='migiecmb@gmail.com',
       DISC='© 2026 Vanguard Logic Development. All rights reserved. For illustration only, not to scale. No copying or distribution without written permission.';
   /* --- SHA-256 (pure JS, works offline and in every browser) --- */
   function sha256(str){var K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
@@ -590,8 +591,8 @@ var AUTH=(function(){
       (cfg.client&&mode==='dev'&&!first?'':'<label>Username<input id="gu" autocapitalize="none" autocomplete="username" required></label>')+
       '<label>Password<input id="gp" type="password" autocomplete="'+(first?'new-password':'current-password')+'" required></label>'+
       (first?'<label>Repeat password<input id="gp2" type="password" autocomplete="new-password" required></label>':'')+
-      (openOn()&&!first?'<div class="note">Open access: leave username and password empty and tap Sign in.</div>':'')+'<div id="gmsg" class="gmsg"></div><button class="pri big" type="button" id="gbtn">'+(first?'Create and sign in':'Sign in')+'</button>'+
-      (first?'':'<button class="gback" type="button" id="gBack">← Sign in as</button>')+'</div></div>'+foot();if(first)devTap();
+      (openOn()&&!first?'<div class="note">Open access: leave username and password empty and tap Sign in.</div>':'')+'<div id="gmsg" class="gmsg"></div><button class="pri big" type="button" id="gbtn">'+(first?'+ Account':'Sign in')+'</button>'+
+      (first?'':'<button class="gback" type="button" id="gBack">← Back</button>')+'</div></div>'+foot();if(first)devTap();
     if(!first)g('gBack').onclick=function(){mode=null;loginScreen();};
     var run=function(){first?setup():signIn();};g('gbtn').onclick=run;
     Array.prototype.forEach.call(g('gf').querySelectorAll('input'),function(i){i.onkeydown=function(ev){if(ev.key==='Enter'){ev.preventDefault();run();}};});
@@ -617,7 +618,7 @@ var AUTH=(function(){
   /* --- users (Admin and Developer) and own password (everyone) --- */
   function accountPanel(){if(!cur)return '';if(cur.user==='vld-dev')return '<h2>My account</h2><div class="card note">Signed in as Developer ('+DEV+').</div>';if(/^open-/.test(cur.user))return '<h2>My account</h2><div class="card note">Signed in with open access as '+e(cur.role)+'.'+(isAdmin()?' Add user logins under + User.':'')+'</div>';return '<h2>My account</h2><div class="card form2"><div class="note" style="margin-bottom:8px">Signed in as <b>'+e(cur.name)+'</b> ('+e(cur.user)+') · '+e(cur.role)+'</div>'+
     '<div class="two"><label>Current password<input id="ap0" type="password" autocomplete="current-password"></label><label>New password<input id="ap1" type="password" autocomplete="new-password"></label></div>'+
-    '<button class="pri" onclick="AUTH.changePw()">Change password</button><div id="amsg" class="gmsg"></div></div>';}
+    '<button class="pri" onclick="AUTH.changePw()">Change</button><div id="amsg" class="gmsg"></div></div>';}
   function changePw(){var a=g('amsg'),p0=g('ap0').value,p1=g('ap1').value,us=users(),x=us.filter(function(z){return z.user===cur.user;})[0];
     if(!x||x.hash!==hash(p0,x.salt)){a.style.color='var(--bad)';a.textContent='The current password is wrong.';return;}
     if(p1.length<6){a.style.color='var(--bad)';a.textContent='New password: at least 6 characters.';return;}
@@ -633,7 +634,7 @@ var AUTH=(function(){
       '<div class="note">Username: 3 to 20 letters or numbers, no spaces. Users (Storekeeper / Manager) work with stock; Admin can also add, edit and delete items, manage users and settings; Developer has full access.</div></div>'+
       '<div class="card scroll"><table><thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Status</th><th></th></tr></thead><tbody>'+
       us.map(function(x){return '<tr><td>'+e(x.name)+'</td><td class="mono">'+e(x.user)+'</td><td>'+e(x.role)+'</td><td>'+(x.active?'<span class="badge b-ok">Active</span>':'<span class="badge b-bad">Disabled</span>')+'</td>'+
-        '<td style="white-space:nowrap">'+(x.user===cur.user?'<span class="note">You</span>':canManage(x)?'<button class="sm" onclick="AUTH.toggle(\''+x.id+'\')">'+(x.active?'Disable':'Enable')+'</button> <button class="sm" onclick="AUTH.reset(\''+x.id+'\')">Reset password</button> <button class="sm bad" onclick="AUTH.del(\''+x.id+'\')">Delete</button>':'')+'</td></tr>';}).join('')+
+        '<td style="white-space:nowrap">'+(x.user===cur.user?'<span class="note">You</span>':canManage(x)?'<button class="sm" onclick="AUTH.toggle(\''+x.id+'\')">'+(x.active?'Disable':'Enable')+'</button> <button class="sm" onclick="AUTH.reset(\''+x.id+'\')">Reset</button> <button class="sm bad" onclick="AUTH.del(\''+x.id+'\')">Delete</button>':'')+'</td></tr>';}).join('')+
       '</tbody></table>'+(us.length?'':'<div class="note" style="margin-top:8px">No user logins yet. Fill in the form above and tap + User.</div>')+'</div>';}
   function umsg(t,ok){var m=g('umsg');if(m){m.textContent=t;m.style.color=ok?'var(--ok)':'var(--bad)';}}
   function add(){if(!isAdmin())return;var n=g('un').value.trim(),u=g('uu').value.trim().toLowerCase(),p=g('up').value,r=g('ur').value,us=users();
@@ -734,7 +735,7 @@ function hasPack(it){return !!(it&&it.unit==='pcs'&&it.pack&&UF[it.pack.u]&&+it.
 function iu(it){return ['pcs'];}
 /* recipes (in-house products) may use g / ml of an item that has a pack size */
 function iuR(it){return hasPack(it)?['pcs',...units(it.pack.u)]:units(it?it.unit:'kg');}
-const PL={box:'boxes',piece:'pieces','no.':'no.'};
+const PL={box:'boxes',piece:'pcs','no.':'no.'};
 function pkType(it){return (it&&it.pack&&it.pack.type)||'no.';}
 function pkName(it,n){const t=pkType(it);if(t==='no.')return 'no.';return n===1?t:(PL[t]||t+'s');}
 function uN(it){return it?pkName(it):'no.';}
@@ -867,8 +868,8 @@ function vStock(){
   return `<h2>Stock in hand</h2>
   <div class="tiles">${tile('all','All items',S.items.length)}${tile('low','Low or out of stock',st.filter(x=>x.low||x.out).length,'warn')}${tile('soon','Expiring in '+S.set.warn+' days',st.filter(x=>x.soon).length,'warn')}${tile('exp','Items with expired lots',st.filter(x=>x.exp).length,'bad')}</div>
   <div class="row srow" style="margin-bottom:12px"><input id="sq" placeholder="Item, SKU, lot — or low, out, expiring" value="${esc(q)}" oninput="q=this.value;drawStock()" onkeydown="if(event.key==='Enter'){q=this.value;drawStock()}"><button class="pri" onclick="q=$('sq').value;drawStock()"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style="vertical-align:-3px;margin-right:6px"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>Search</button></div>
-  <div class="card" style="padding:10px 12px"><div class="acts" style="margin:0"><button onclick="xlStock()">Excel</button><button onclick="sendBox('Send stock in hand','Stock in hand',stockText(),'','',defStock)">Send</button></div>
-   <div class="note" style="margin-top:6px">Excel: saves the stock-in-hand report (all items and lots) as an Excel file. Send: sends the same report as an Excel, PDF or image file by WhatsApp or email.</div></div>
+  <div class="card" style="padding:10px 12px"><div class="acts" style="margin:0"><button onclick="xlStock()">↓ Excel</button><button onclick="sendBox('Send stock in hand','Stock in hand',stockText(),'','',defStock)">Send</button></div>
+   <div class="note" style="margin-top:6px">↓ Excel: saves the stock-in-hand report (all items and lots) as an Excel file. Send: sends the same report as an Excel, PDF or image file by WhatsApp or email.</div></div>
   <div class="card scroll"><table><thead><tr><th>SKU</th><th>Item</th><th>In hand</th><th>Next expiry</th><th>Status</th></tr></thead><tbody id="slist"></tbody></table></div>`;}
 const SEARCH_WORDS={'out':x=>x.out,'out of stock':x=>x.out,'no stock':x=>x.out,'low':x=>x.low,'low stock':x=>x.low,'low or out':x=>x.low||x.out,
   'expiring':x=>x.soon,'expiring soon':x=>x.soon,'expired':x=>x.exp,'ok':x=>!x.out&&!x.low&&!x.exp&&!x.soon,'in stock':x=>!x.out};
@@ -890,7 +891,7 @@ function vItem(){const it=item(param);if(!it)return nf();const x=stat(it),sl=sel
     <div>${badges(x)}</div>
     <div class="kv"><span>Usable (not expired)</span><b>${fq(x.usable,it.unit)}</b><span>Main supplier</span><b>${sl?esc(sl.name)+(sl.phone?' · '+esc(sl.phone):''):'—'}</b><span>Other suppliers</span><b>${(it.alts||[]).map(seller).filter(Boolean).map(x=>esc(x.name)).join(', ')||'—'}</b>${it.notes?`<span>Notes</span><b>${esc(it.notes)}</b>`:''}</div></div>
     <div class="qrb">${qr(it.sku)}</div></div></div>
-  <div class="acts"><button class="pri" onclick="go('recv','${it.id}')">Receive stock</button>${canItems()?`<button onclick="go('itemEdit','${it.id}')">Edit item</button>`:''}<button onclick="labelPng([itemLabelData(item('${it.id}'))],'Label-${esc(it.sku)}.png')">QR label</button></div>
+  <div class="acts"><button class="pri" onclick="go('recv','${it.id}')">Receive</button>${canItems()?`<button onclick="go('itemEdit','${it.id}')">Edit</button>`:''}<button onclick="labelPng([itemLabelData(item('${it.id}'))],'Label-${esc(it.sku)}.png')">↓ QR label</button></div>
   <h2>Lots</h2><label class="inl"><input type="checkbox" ${showUsed?'checked':''} onchange="showUsed=this.checked;render()">Show used-up lots</label>
   <div class="card scroll"><table><thead><tr><th>Our lot no.</th><th>Supplier lot</th><th>Supplier</th><th>Received</th><th>Qty received</th><th>Remaining</th><th>Expiry</th></tr></thead><tbody>
   ${lots.map(l=>`<tr class="click" onclick="go('lot','${l.id}')"><td class="mono">${esc(l.lot)}</td><td>${esc(l.supLot||'—')}</td><td>${esc((seller(l.seller)||{}).name||'—')}</td><td>${fd(l.recv)}</td><td>${fq(l.qtyIn,it.unit)}</td><td class="num">${fq(l.qtyLeft,it.unit)}</td><td style="white-space:nowrap">${l.exp?fd(l.exp)+expTag(l.exp):'—'}</td></tr>`).join('')||'<tr><td colspan="7" class="note">No stock in hand.</td></tr>'}
@@ -910,14 +911,14 @@ function vLot(){const l=lot(param);if(!l)return nf();const it=item(l.itemId),sl=
     <div class="big">${fq(l.qtyLeft,it.unit)} <span class="note">remaining of ${fq(l.qtyIn,it.unit)}</span></div>
     <div class="kv"><span>Supplier</span><b>${esc(sl?sl.name:'—')}</b><span>Supplier lot / batch no.</span><b>${esc(l.supLot||'—')}</b><span>Received</span><b>${fd(l.recv)}</b><span>Manufactured</span><b>${fd(l.mfg)||'—'}</b><span>Expiry</span><b>${l.exp?fd(l.exp)+expTag(l.exp):'—'}</b><span>GRN no.</span><b>${esc(l.grn||'—')}</b><span>Supplier invoice no.</span><b>${esc(l.inv||'—')}</b><span>Invoice date</span><b>${fd(l.invDate)||'—'}</b><span>Received by</span><b>${esc(l.by||'—')}</b></div></div>
     <div class="qrb">${qr(l.lot)}</div></div></div>
-  <div class="acts"><button class="pri" onclick="labelPng([lotLabelData(lot('${l.id}'))],'Label-${esc(l.lot)}.png')">Lot label</button></div>
+  <div class="acts"><button class="pri" onclick="labelPng([lotLabelData(lot('${l.id}'))],'Label-${esc(l.lot)}.png')">↓ Lot label</button></div>
   <div class="two" style="margin-top:12px">
    <div class="card"><h3>Hand out from this lot</h3><div class="row"><input id="iq" type="number" min="1" step="1" inputmode="numeric" placeholder="Quantity (whole packs)"><select id="iu">${uo}</select></div>
     <input id="ir" placeholder="Reason or production batch no." style="margin-top:8px"><input id="ib" placeholder="Handed out by">
     <div class="acts"><button class="pri" onclick="lotIssue('${l.id}')">Hand out</button></div></div>
    <div class="card"><h3>Stock count</h3><div class="note" style="margin-bottom:8px">Enter the counted quantity of this lot. The difference is recorded.</div><div class="row"><input id="aq" type="number" min="0" step="any" inputmode="decimal" placeholder="Counted quantity"><select id="au">${uo}</select></div>
     <input id="ar" placeholder="Reason" style="margin-top:8px"><input id="ab" placeholder="Counted by">
-    <div class="acts"><button onclick="lotAdj('${l.id}')">Save count</button></div></div></div>
+    <div class="acts"><button onclick="lotAdj('${l.id}')">Save</button></div></div></div>
   <h2>Movements</h2>${mvTable(S.moves.filter(m=>m.lotId===l.id),false)}`;}
 async function lotIssue(id){const l=lot(id),it=item(l.itemId);const v=+$('iq').value;if(!(v>0))return toast('Enter the quantity to hand out');if(!Number.isInteger(v))return toast('Whole '+pkName(it)+' only — no part packs');
   const qq=r6(toStk(v,$('iu').value,it));if(qq>l.qtyLeft+1e-9)return toast('Only '+fq(l.qtyLeft,it.unit)+' left in this lot');
@@ -935,7 +936,7 @@ function vRecv(){const r=rcv,sl=seller(r.sup),its=r.lines.map(l=>item(l.item)).f
   return `<h2>Receive stock</h2>${lastGrn?grnDone():''}
   <div class="card form2"><h3>Supplier invoice and GRN</h3>
    <div class="note" style="margin-bottom:8px">Enter the details manually, or scan the supplier's invoice to fill them.</div>
-   <div class="acts" style="margin:0 0 12px"><button class="pri" onclick="pickDoc('grn',true)">Scan Invoice</button><button onclick="pickDoc('grn',false)">Attach file</button></div>
+   <div class="acts" style="margin:0 0 12px"><button class="pri" onclick="pickDoc('grn',true)">Scan invoice</button><button onclick="pickDoc('grn',false)">↑ Attach file</button></div>
    ${r.doc?`<div class="note" style="margin-bottom:10px">Filled from: ${esc(r.doc)}. Check every field.</div>`:''}
    ${r.scan&&r.scan.need?`<div class="card" style="border-color:var(--warn);margin:0 0 12px"><b style="color:var(--warn)">Some parts of the invoice were not clear</b>
     <div class="note" style="margin-top:4px">Fill in the boxes marked in yellow, or type the details in manually.${r.scan.unclear.length?' Not clear on the invoice:':''}</div>
@@ -949,13 +950,13 @@ function vRecv(){const r=rcv,sl=seller(r.sup),its=r.lines.map(l=>item(l.item)).f
    <label>Received by<input value="${esc(r.by)}" oninput="rcv.by=this.value"></label></div>
   <h2>Items received</h2>${r.lines.map(lineCard).join('')}
   <div class="acts" style="margin:0 0 12px"><button onclick="rcv.lines.push(blankLine());render()">+ Item</button></div>
-  <div class="acts" style="margin-top:0"><button class="pri big" onclick="doGrn()">Generate Lot Numbers</button><button onclick="ask('Clear this form?').then(y=>{if(y){rcv=newRcv(rcv.by);render()}})">Clear</button></div>
-  <div class="note">Generate Lot Numbers: adds the items to stock, gives each one our lot number and makes the GRN (goods received note).</div>
+  <div class="acts" style="margin-top:0"><button class="pri big" onclick="doGrn()">Generate lot No.</button><button onclick="ask('Clear this form?').then(y=>{if(y){rcv=newRcv(rcv.by);render()}})">Clear</button></div>
+  <div class="note">Generate lot No.: adds the items to stock, gives each one our lot number and makes the GRN (goods received note).</div>
   <h2>Recent receipts</h2>${recvTable(S.lots.slice().sort((a,b)=>b.created-a.created).slice(0,20))}`;}
 function lineCard(l,i){const it=item(l.item),uu=['pcs'],u='pcs';
   const sc=!!rcv.scan;
-  return `<div class="card" ${l.unclear?'style="border-color:var(--warn)"':''}><div class="mt"><b>Line ${i+1}</b>${l.unclear?' <span class="tag warn">not clear — check</span>':''}${rcv.lines.length>1?`<button class="sm bad" onclick="rcv.lines.splice(${i},1);render()">✕ Remove</button>`:''}</div>
-   ${l.docName&&!it?`<div class="note" style="margin-bottom:8px">On the invoice: "${esc(l.docName)}" is not in Items. ${canItems()?`<a onclick="quickItem(${i})">Add it as a new item</a>, or choose`:'Ask Admin to add it as a new item, or choose'} the item below.</div>`:''}
+  return `<div class="card" ${l.unclear?'style="border-color:var(--warn)"':''}><div class="mt"><b>Line ${i+1}</b>${l.unclear?' <span class="tag warn">not clear — check</span>':''}${rcv.lines.length>1?`<button class="sm bad" onclick="rcv.lines.splice(${i},1);render()">✕</button>`:''}</div>
+   ${l.docName&&!it?`<div class="note" style="margin-bottom:8px">On the invoice: "${esc(l.docName)}" is not in Items. ${canItems()?`<a onclick="quickItem(${i})">+ New item</a>, or choose`:'Ask Admin to add it as a new item, or choose'} the item below.</div>`:''}
    <label>Item<div class="row"><select class="${sc&&!l.item?'need':''}" onchange="rcvItem(${i},this.value)"><option value="">— Select item —</option>${itemOpts(l.item)}</select><button onclick="scanLine(${i})">Scan</button></div></label>
    <div class="two"><label>Supplier lot / batch no.<input value="${esc(l.supLot)}" oninput="rcv.lines[${i}].supLot=this.value"></label>
     <label>Quantity<div class="row"><input class="${sc&&!l.qty?'need':''}" type="number" min="0" step="any" inputmode="decimal" value="${esc(l.qty)}" oninput="rcv.lines[${i}].qty=this.value;this.classList.toggle('need',!this.value);qcv('qc${i}',this.value,rcv.lines[${i}].unit||'${u}','${l.item}')"><select onchange="rcv.lines[${i}].unit=this.value;qcv('qc${i}',rcv.lines[${i}].qty,this.value,'${l.item}')">${uOpts(uu,u,it)}</select></div><div class="note" id="qc${i}" style="margin-top:4px">${convText(l.qty,u,it)}</div></label></div>
@@ -971,7 +972,7 @@ function newSupCard(){const n=rcv.newSup;return `<div class="card" style="border
    <label style="margin-top:8px">Supplier / company name<input value="${esc(n.name)}" oninput="rcv.newSup.name=this.value"></label>
    <div class="two"><label>WhatsApp / phone<input value="${esc(n.phone)}" oninput="rcv.newSup.phone=this.value"></label><label>Email<input value="${esc(n.email)}" oninput="rcv.newSup.email=this.value"></label></div>
    <label>Address<input value="${esc(n.address)}" oninput="rcv.newSup.address=this.value"></label>
-   <div class="acts" style="margin-top:0"><button class="pri" onclick="saveNewSup()">Save supplier</button><button onclick="rcv.newSup=null;render()">Ignore</button></div></div>`;}
+   <div class="acts" style="margin-top:0"><button class="pri" onclick="saveNewSup()">Save</button><button onclick="rcv.newSup=null;render()">Ignore</button></div></div>`;}
 function saveNewSup(){const n=rcv.newSup;if(!n.name.trim())return toast('Enter the supplier name');if(n.email&&!EMAIL_RE.test(n.email.trim()))return toast('Check the email');
   const z={id:rid(),code:newSupCode(),name:n.name.trim(),contact:'',phone:n.phone.trim(),email:n.email.trim(),address:n.address.trim(),notes:'',created:Date.now()};S.sellers.push(z);
   rcv.sup=z.id;rcv.newSup=null;save();render();toast('Supplier saved: '+z.code);}
@@ -995,7 +996,7 @@ function grnDone(){const g=lastGrn,sl=seller(g.sup),ls=g.lots.map(lot).filter(Bo
    <div class="scroll"><table style="margin-top:8px"><thead><tr><th>Our lot no.</th><th>Item</th><th>Qty</th><th>Expiry</th></tr></thead><tbody>
    ${ls.map(l=>{const it=item(l.itemId);return `<tr class="click" onclick="go('lot','${l.id}')"><td class="mono">${esc(l.lot)}</td><td>${esc(it.name)}</td><td>${fq(l.qtyIn,it.unit)}</td><td>${fd(l.exp)||'—'}</td></tr>`;}).join('')}
    </tbody></table></div>
-   <div class="acts"><button class="pri" onclick="labelPng(lastGrn.lots.map(lot).filter(Boolean).map(lotLabelData),'Labels-'+lastGrn.grn+'.png')">Lot labels</button><button onclick="sendBox('Send GRN','GRN '+lastGrn.grn,grnText(lastGrn),(seller(lastGrn.sup)||{}).phone,(seller(lastGrn.sup)||{}).email,()=>defGrn(lastGrn))">Send</button><button onclick="lastGrn=null;render()">Close</button></div></div>`;}
+   <div class="acts"><button class="pri" onclick="labelPng(lastGrn.lots.map(lot).filter(Boolean).map(lotLabelData),'Labels-'+lastGrn.grn+'.png')">↓ Lot labels</button><button onclick="sendBox('Send GRN','GRN '+lastGrn.grn,grnText(lastGrn),(seller(lastGrn.sup)||{}).phone,(seller(lastGrn.sup)||{}).email,()=>defGrn(lastGrn))">Send</button><button onclick="lastGrn=null;render()">Close</button></div></div>`;}
 function recvSellerOpts(its,sel){const mine=[...new Set(its.flatMap(itemSellers))],others=S.sellers.filter(x=>!mine.includes(x.id)).sort((a,b)=>a.name.localeCompare(b.name));
   let h='<option value="">— Select supplier —</option>';
   if(mine.length)h+=`<optgroup label="Suppliers of these items">${mine.map(id=>`<option value="${id}" ${id===sel?'selected':''}>${esc(seller(id).name)}${its.some(i=>i.seller===id)?' (main)':''}</option>`).join('')}</optgroup>`;
@@ -1009,7 +1010,7 @@ function recvTable(list){if(!list.length)return '<div class="card note">Nothing 
 /* ================= ISSUE ================= */
 function allRecipes(){return RECIPES.concat(S.prods||[]);}
 function issueCats(){return ISSUE_CATS.concat(S.cats||[]);}
-function addCat(){showModal(`<h3>Add category</h3><label>Category name<input id="ncat" placeholder="e.g. Teriyaki Sauce"></label><div class="acts"><button class="pri" id="ncY">Save category</button><button onclick="hideModal()">Cancel</button></div>`);
+function addCat(){showModal(`<h3>Add category</h3><label>Category name<input id="ncat" placeholder="e.g. Teriyaki Sauce"></label><div class="acts"><button class="pri" id="ncY">Save</button><button onclick="hideModal()">Cancel</button></div>`);
   const f=$('ncat');f.focus();f.onkeydown=e=>{if(e.key==='Enter')$('ncY').click();};
   $('ncY').onclick=()=>{const n=f.value.trim().replace(/\s+/g,' ');if(!n)return toast('Enter the category name');
     if(issueCats().some(c=>c.toLowerCase()===n.toLowerCase()))return toast('This category already exists');
@@ -1037,7 +1038,7 @@ function vProdEdit(){if(!pe)return nf();
    <td><button class="sm bad" onclick="pe.lines.splice(${x},1);render()">✕</button></td></tr>`;}).join('')||'<tr><td colspan="4" class="note">No items yet.</td></tr>'}
   </tbody></table><div class="acts"><button onclick="pe.lines.push({item:'',qty:'',unit:'g'});render()">+ Item</button><button onclick="retView='prodEdit';go('itemEdit','new')">+ New item</button></div>
   <div class="note" style="margin-top:8px">Only store items are listed here. Anything not kept in the store is not deducted.</div></div>
-  <div class="acts"><button class="pri big" onclick="saveProd()">Save product</button>${pe.id?`<button class="bad" onclick="delProd()">Delete product</button>`:''}<button onclick="pe=null;go('issue')">Cancel</button></div>`;}
+  <div class="acts"><button class="pri big" onclick="saveProd()">Save</button>${pe.id?`<button class="bad" onclick="delProd()">Delete</button>`:''}<button onclick="pe=null;go('issue')">Cancel</button></div>`;}
 function saveProd(){const name=pe.name.trim();if(!name)return toast('Enter the product name');
   const lines=pe.lines.filter(l=>item(l.item)&&+l.qty>0).map(l=>({item:l.item,qty:+l.qty,unit:l.unit}));if(!lines.length)return toast('Add at least one store item with a quantity');
   if(allRecipes().some(r=>r.name.toLowerCase()===name.toLowerCase()&&r.id!==pe.id))return toast('A product with this name already exists');
@@ -1082,10 +1083,10 @@ function vRelease(){const c=client(rel.client),ih=c&&c.internal,P=relNeeds(),sho
    <div class="two"><label>${ih?'Production issue no.':'Invoice no.'} (automatic)<input value="${esc(c?peekInv(c):'Select first')}" disabled></label><label>Release note no. (automatic)<input value="${esc(peekRel())}" disabled></label></div>
    <div class="two"><label>PO number<input value="${esc(rel.order)}" oninput="rel.order=this.value" placeholder="${ih?'e.g. production order no.':'client purchase order no.'}"></label>
     <label>Recipient name<input list="recipL" value="${esc(rel.recip)}" oninput="rel.recip=this.value" placeholder="person receiving the goods"><datalist id="recipL">${recipNames().map(n=>`<option value="${esc(n)}">`).join('')}</datalist></label></div>
-   ${ih?'':`<label>Sales person<input list="salesL" value="${esc(rel.sales)}" oninput="rel.sales=this.value"><datalist id="salesL">${salesNames().map(n=>`<option value="${esc(n)}">`).join('')}</datalist></label>`}
+   ${ih?'':`<label>Salesperson<input list="salesL" value="${esc(rel.sales)}" oninput="rel.sales=this.value"><datalist id="salesL">${salesNames().map(n=>`<option value="${esc(n)}">`).join('')}</datalist></label>`}
    <div class="two"><label>Handed out by<input value="${esc(rel.by)}" oninput="rel.by=this.value"></label><label>Notes (vehicle, delivery address, etc.)<input value="${esc(rel.note)}" oninput="rel.note=this.value"></label></div></div>
   <h2>Items</h2>
-  ${rel.lines.map((l,i)=>{const it=item(l.item),u='pcs';return `<div class="card form2"><div class="hd" style="align-items:center"><b>Line ${i+1}</b>${rel.lines.length>1?`<button class="sm bad" onclick="rel.lines.splice(${i},1);render()">✕ Remove</button>`:''}</div>
+  ${rel.lines.map((l,i)=>{const it=item(l.item),u='pcs';return `<div class="card form2"><div class="hd" style="align-items:center"><b>Line ${i+1}</b>${rel.lines.length>1?`<button class="sm bad" onclick="rel.lines.splice(${i},1);render()">✕</button>`:''}</div>
     <label>Item<select onchange="rel.lines[${i}].item=this.value;rel.lines[${i}].unit=(item(this.value)||{}).unit||'';render()"><option value="">— Select item —</option>${itemOpts(l.item)}</select></label>
     ${it?`<div class="note" style="margin-bottom:10px">Usable in hand: ${fq(stat(it).usable,it.unit)} ${pkName(it)}</div>`:''}${it&&+l.qty>0&&!Number.isInteger(+l.qty)?`<div class="note" style="color:var(--bad);margin-bottom:8px">Whole ${pkName(it)} only — no part packs.</div>`:''}
     <label>Quantity (whole ${it?pkName(it):'packs'} only)<div class="row"><input type="number" min="1" step="1" inputmode="numeric" value="${esc(l.qty)}" onchange="rel.lines[${i}].qty=this.value;render()"><select onchange="rel.lines[${i}].unit=this.value;render()">${uOpts(['pcs'],u,it)}</select></div></label></div>`;}).join('')}
@@ -1098,7 +1099,7 @@ function vRelease(){const c=client(rel.client),ih=c&&c.internal,P=relNeeds(),sho
   ${short?'<div class="note">Cannot hand out: one or more items are short.</div>':''}
   ${recentRel()}`;}
 async function doRelease(){const c=client(rel.client);if(!c)return toast('Select a client or In-house production');if(!rel.recip.trim())return toast('Enter the recipient name');
-  if(!c.internal&&!rel.sales.trim())return toast('Enter the sales person name');{const bad=rel.lines.findIndex(l=>item(l.item)&&+l.qty>0&&!Number.isInteger(+l.qty));if(bad>=0)return toast('Line '+(bad+1)+': whole '+pkName(item(rel.lines[bad].item))+' only — no part packs');}const P=relNeeds();if(!P.length)return toast('Add at least one item with a quantity');
+  if(!c.internal&&!rel.sales.trim())return toast('Enter the salesperson name');{const bad=rel.lines.findIndex(l=>item(l.item)&&+l.qty>0&&!Number.isInteger(+l.qty));if(bad>=0)return toast('Line '+(bad+1)+': whole '+pkName(item(rel.lines[bad].item))+' only — no part packs');}const P=relNeeds();if(!P.length)return toast('Add at least one item with a quantity');
   if(P.some(p=>p.short))return toast('Stock is short');
   if(!(await ask(`Hand out ${P.length} item(s) to ${c.name} and deduct stock?`)))return;
   const no=newRelNo(),inv=newInvNo(c),ref=[docWord(c)+' '+inv,'Release '+no,rel.order.trim()&&'PO '+rel.order.trim(),'Recipient '+rel.recip.trim(),!c.internal&&'Sales '+rel.sales.trim(),rel.note.trim()].filter(Boolean).join(' · '),n0=S.moves.length;
@@ -1107,11 +1108,11 @@ async function doRelease(){const c=client(rel.client);if(!c)return toast('Select
   rel=newRel();save();go('relNote',no);toast('Handed out: '+inv);}
 function relMoves(no){return S.moves.filter(m=>m.rel===no);}
 function relList(cid){const seen={},out=[];S.moves.forEach(m=>{if(m.type!=='REL'||!m.rel||seen[m.rel])return;if(cid&&m.client!==cid)return;seen[m.rel]=1;out.push(m);});return out;}
-function recentRel(){const l=relList().slice(0,15);return `<h2>Recent hand-outs</h2>`+(l.length?`<div class="acts" style="margin:0 0 10px"><button onclick="sendBox('Send recent hand-outs','Hand-outs',relsText(),'','',defRels)">Send</button></div><div class="card scroll"><table><thead><tr><th>Date &amp; time</th><th>Invoice / issue no.</th><th>Release note</th><th>To</th><th>PO number</th><th>Recipient</th><th>Sales person</th><th>Items</th><th>By</th></tr></thead><tbody>
+function recentRel(){const l=relList().slice(0,15);return `<h2>Recent hand-outs</h2>`+(l.length?`<div class="acts" style="margin:0 0 10px"><button onclick="sendBox('Send recent hand-outs','Hand-outs',relsText(),'','',defRels)">Send</button></div><div class="card scroll"><table><thead><tr><th>Date &amp; time</th><th>Invoice / issue no.</th><th>Release note</th><th>To</th><th>PO number</th><th>Recipient</th><th>Salesperson</th><th>Items</th><th>By</th></tr></thead><tbody>
   ${l.map(m=>{const c=client(m.client);return `<tr class="click" onclick="go('relNote','${m.rel}')"><td>${fdt(m.t)}</td><td class="mono">${esc(m.cinv||'—')}</td><td class="mono">${esc(m.rel)}</td><td>${esc(c?c.name:'(deleted client)')}</td><td>${esc(m.order||'—')}</td><td>${esc(m.recip||'—')}</td><td>${esc(m.sales||'—')}</td><td>${new Set(relMoves(m.rel).map(x=>x.itemId)).size}</td><td>${esc(m.by||'')}</td></tr>`;}).join('')}</tbody></table></div>`:'<div class="card note">No hand-outs yet.</div>');}
 function relLines(no){const by={};relMoves(no).slice().reverse().forEach(m=>{const k=m.itemId;by[k]=by[k]||{itemId:k,qty:0,lots:[]};by[k].qty=r6(by[k].qty-m.qty);const l=lot(m.lotId);if(l)by[k].lots.push({lot:l.lot,exp:l.exp,q:-m.qty});});return Object.values(by);}
 function relText(no){const ms=relMoves(no),m=ms[0],c=client(m.client);
-  let t=`${docWord(c).toUpperCase()} ${m.cinv||'—'}\nRelease note ${no}\n${S.set.biz}\nDate: ${fdt(m.t)}\n\n${c&&c.internal?'TO\nIn-house production':'CLIENT\n'+(c?c.code+' — '+c.name:'(deleted client)')+'\n'+(c?contactLines(c):'')}\n\n${m.order?`PO number: ${m.order}\n`:''}${m.recip?`Recipient: ${m.recip}\n`:''}${m.sales?`Sales person: ${m.sales}\n`:''}${m.by?`Handed out by: ${m.by}\n`:''}\nITEMS\n`;
+  let t=`${docWord(c).toUpperCase()} ${m.cinv||'—'}\nRelease note ${no}\n${S.set.biz}\nDate: ${fdt(m.t)}\n\n${c&&c.internal?'TO\nIn-house production':'CLIENT\n'+(c?c.code+' — '+c.name:'(deleted client)')+'\n'+(c?contactLines(c):'')}\n\n${m.order?`PO number: ${m.order}\n`:''}${m.recip?`Recipient: ${m.recip}\n`:''}${m.sales?`Salesperson: ${m.sales}\n`:''}${m.by?`Handed out by: ${m.by}\n`:''}\nITEMS\n`;
   relLines(no).forEach((x,i)=>{const it=item(x.itemId);t+=`${i+1}. ${it?it.name:'(item)'}${it?' ['+it.sku+']':''} — ${fq(x.qty,it?it.unit:'')} (lot ${x.lots.map(k=>k.lot+(k.exp?' exp '+fd(k.exp):'')).join(', ')})\n`;});
   if(m.note)t+=`\nNotes: ${m.note}\n`;return t.replace(/\n{3,}/g,'\n\n').trim();}
 function vRelNote(){const ms=relMoves(param);if(!ms.length)return nf();const m=ms[0],c=client(m.client),wa=c&&waNum(c.phone),em=c&&EMAIL_RE.test(c.email||'');
@@ -1120,7 +1121,7 @@ function vRelNote(){const ms=relMoves(param);if(!ms.length)return nf();const m=m
   <div class="paper"><div class="rep"><div class="rh"><div><h1>${docWord(c)} ${esc(m.cinv||'—')}</h1><div>Release note ${esc(param)} · ${esc(S.set.biz)} · ${fdt(m.t)}</div>
    <div style="margin-top:6px">${c&&c.internal?'To: <b>In-house production</b>':`Client: <b>${esc(c?c.code+' — '+c.name:'(deleted client)')}</b>`}</div>
    ${c?[c.contact&&'Contact: '+esc(c.contact),c.phone&&'WhatsApp / phone: '+esc(c.phone),c.email&&'Email: '+esc(c.email),c.address&&'Address: '+esc(c.address)].filter(Boolean).map(x=>`<div>${x}</div>`).join(''):''}
-   <div style="margin-top:6px"></div>${m.order?`<div>PO number: <b>${esc(m.order)}</b></div>`:''}${m.recip?`<div>Recipient: <b>${esc(m.recip)}</b></div>`:''}${m.sales?`<div>Sales person: <b>${esc(m.sales)}</b></div>`:''}${m.by?`<div>Handed out by: ${esc(m.by)}</div>`:''}${m.note?`<div>Notes: ${esc(m.note)}</div>`:''}</div></div>
+   <div style="margin-top:6px"></div>${m.order?`<div>PO number: <b>${esc(m.order)}</b></div>`:''}${m.recip?`<div>Recipient: <b>${esc(m.recip)}</b></div>`:''}${m.sales?`<div>Salesperson: <b>${esc(m.sales)}</b></div>`:''}${m.by?`<div>Handed out by: ${esc(m.by)}</div>`:''}${m.note?`<div>Notes: ${esc(m.note)}</div>`:''}</div></div>
   <table><thead><tr><th>#</th><th>SKU</th><th>Item</th><th>Qty</th><th>Our lot no.</th><th>Expiry</th></tr></thead><tbody>
   ${relLines(param).map((x,i)=>{const it=item(x.itemId)||{name:'(deleted item)',sku:'',unit:''};return `<tr><td>${i+1}</td><td>${esc(it.sku)}</td><td>${esc(it.name)}</td><td style="white-space:nowrap">${fq(x.qty,it.unit)}</td><td>${x.lots.map(k=>esc(k.lot)+(x.lots.length>1?' ('+fq(k.q,it.unit)+')':'')).join('<br>')}</td><td>${x.lots.map(k=>k.exp?fd(k.exp):'—').join('<br>')}</td></tr>`;}).join('')}
   </tbody></table>
@@ -1133,15 +1134,15 @@ function vClients(){return `<h2>Clients</h2><div class="acts" style="margin:0 0 
   ${S.clients.filter(c=>!c.internal).sort((a,b)=>a.name.localeCompare(b.name)).map(c=>`<tr class="click" onclick="go('clientEdit','${c.id}')"><td class="mono">${esc(c.code)}</td><td>${esc(c.name)}</td><td>${esc(c.contact||'—')}</td><td>${esc(c.phone||'—')}</td><td>${esc(c.email||'—')}</td><td>${esc(c.address||'—')}</td><td>${relList(c.id).length}</td></tr>`).join('')}
   </tbody></table></div>`:'<div class="card note">No clients yet.</div>'}`;}
 function vClientEdit(){if(param==='inhouse')return nf();const nw=param==='new',c=nw?{name:'',contact:'',phone:'',email:'',address:'',notes:''}:client(param);if(!c)return nf();const rl=nw?[]:relList(c.id);
-  return `<h2>${nw?'Add client':'Client '+esc(c.code)}</h2><div class="card form2">
+  return `<div class="acts top"><button onclick="go(retView||'clients');retView=null">← Back</button></div><h2>${nw?'Add client':'Client '+esc(c.code)}</h2><div class="card form2">
    <label>Client / company name<input id="cN" value="${esc(c.name)}"></label>
    <label>Contact person<input id="cC" value="${esc(c.contact)}"></label>
    <label>WhatsApp / phone number<input id="cP" type="tel" value="${esc(c.phone)}" placeholder="e.g. 0771234567"></label>
    <label>Email<input id="cE" type="email" value="${esc(c.email)}"></label>
    <label>Address<input id="cA" value="${esc(c.address)}"></label>
    <label>Notes<input id="cNo" value="${esc(c.notes)}"></label>
-   <div class="acts"><button class="pri" onclick="saveClient('${nw?'new':c.id}')">Save client</button><button onclick="go(retView||'clients');retView=null">Cancel</button>${nw?'':`<button onclick="sendBox('Send client details','Client '+client(param).name,clientText(client(param)),client(param).phone,client(param).email,()=>defClient(client(param)))">Send</button>`}${!nw&&!rl.length?`<button class="bad" onclick="delClient('${c.id}')">Delete client</button>`:''}</div></div>
-  ${nw?'':`<h2>Invoices / releases to this client (${rl.length})</h2>`+(rl.length?`<div class="card scroll"><table><thead><tr><th>Date &amp; time</th><th>Invoice no.</th><th>Release note</th><th>Sales person</th><th>PO no.</th><th>Items released</th><th>By</th></tr></thead><tbody>
+   <div class="acts"><button class="pri" onclick="saveClient('${nw?'new':c.id}')">Save</button><button onclick="go(retView||'clients');retView=null">Cancel</button>${nw?'':`<button onclick="sendBox('Send client details','Client '+client(param).name,clientText(client(param)),client(param).phone,client(param).email,()=>defClient(client(param)))">Send</button>`}${!nw&&!rl.length?`<button class="bad" onclick="delClient('${c.id}')">Delete</button>`:''}</div></div>
+  ${nw?'':`<h2>Invoices / releases to this client (${rl.length})</h2>`+(rl.length?`<div class="card scroll"><table><thead><tr><th>Date &amp; time</th><th>Invoice no.</th><th>Release note</th><th>Salesperson</th><th>PO no.</th><th>Items released</th><th>By</th></tr></thead><tbody>
    ${rl.map(m=>`<tr class="click" onclick="go('relNote','${m.rel}')"><td>${fdt(m.t)}</td><td class="mono">${esc(m.cinv||'—')}</td><td class="mono">${esc(m.rel)}</td><td>${esc(m.sales||'—')}</td><td>${esc(m.order||'—')}</td><td>${relLines(m.rel).map(x=>{const it=item(x.itemId);return esc(it?it.name:'(item)')+' — '+fq(x.qty,it?it.unit:'');}).join('<br>')}</td><td>${esc(m.by||'')}</td></tr>`).join('')}
    </tbody></table></div>`:'<div class="card note">Nothing released to this client yet.</div>')}`;}
 function saveClient(id){const name=$('cN').value.trim();if(!name)return toast('Enter the client name');
@@ -1171,7 +1172,8 @@ function itemLabelData(it){return{code:it.sku,lines:[it.sku,it.name,(CATS[it.cat
 
 /* ================= SCANNER ================= */
 let scan={stream:null,raf:0,det:null,cb:null,busy:false};
-function showModal(h){$('mbody').innerHTML=h;$('modal').classList.remove('hidden');}
+function showModal(h){$('mbody').innerHTML='<button class="mx" type="button" aria-label="Close" onclick="mClose()">✕</button>'+h;$('modal').classList.remove('hidden');}
+function mClose(){const b=[...document.querySelectorAll('#mbody button,#mbody a.btn')].find(x=>x.id==='askN'||/^(Close|Cancel|No)$/.test(x.textContent.trim()));if(b)b.click();else hideModal();}
 function ask(msg,yes){return new Promise(res=>{showModal(`<h3>Please confirm</h3><p style="line-height:1.45">${esc(msg)}</p><div class="acts"><button class="pri" id="askY">${esc(yes||'Yes')}</button><button id="askN">Cancel</button></div>`);
   $('askY').onclick=()=>{hideModal();res(true);};$('askN').onclick=()=>{hideModal();res(false);};});}
 function hideModal(){$('modal').classList.add('hidden');$('mbody').innerHTML='';}
@@ -1304,14 +1306,14 @@ async function shareFile(file,subject,app,phone,email){if(file.name===savedOnce)
   await saveFile(file.name,file);attachBox(file.name,subject,app,phone,email);}
 function attachBox(name,subject,app,phone,email){const n=waNum(phone||''),em=(email||'').trim();
   const wa='https://wa.me/'+(n||''),ml='mailto:'+encodeURIComponent(em).replace(/%40/g,'@')+'?subject='+encodeURIComponent(subject+' — '+S.set.biz);
-  showModal(`<h3>Attach the file</h3><div class="note" style="margin-bottom:10px">This phone does not let ${/\.xlsx$/i.test(name)?'Excel files':'this file type'} be attached automatically. The file is saved in the phone's <b>Downloads</b> folder:</div>
+  showModal(`<h3>Attach the file</h3><div class="note" style="margin-bottom:10px">This phone cannot attach ${/\.xlsx$/i.test(name)?'Excel files':'this file type'} automatically. The file is saved in the phone's <b>Downloads</b> folder:</div>
    <div class="card mono" style="margin:0 0 10px;padding:10px 12px">${esc(name)}</div>
-   <div class="note" style="margin-bottom:10px">${app==='mail'?'Tap <b>Open Email</b>, then tap 📎 Attach → Downloads → choose the file.':'Tap <b>Open WhatsApp</b>, then in the chat tap 📎 → <b>Document</b> → Downloads → choose the file.'}${/\.xlsx$/i.test(name)?' PDF and Image are attached automatically.':''}</div>
-   <div class="acts">${app==='mail'?`<a class="btn pri" href="${esc(ml)}" onclick="hideModal()">Open Email</a>`:`<a class="btn pri" href="${esc(wa)}" target="_blank" rel="noopener" onclick="hideModal()">Open WhatsApp</a>`}<button onclick="hideModal()">Close</button></div>`);}
+   <div class="note" style="margin-bottom:10px">${app==='mail'?'Tap <b>Open 📧</b>, then tap 📎 Attach → Downloads → choose the file.':'Tap <b>Open 💬</b>, then in the chat tap 📎 → <b>Document</b> → Downloads → choose the file.'}${/\.xlsx$/i.test(name)?' PDF and image files are attached automatically.':''}</div>
+   <div class="acts">${app==='mail'?`<a class="btn pri" href="${esc(ml)}" onclick="hideModal()">Open 📧</a>`:`<a class="btn pri" href="${esc(wa)}" target="_blank" rel="noopener" onclick="hideModal()">Open 💬</a>`}<button onclick="hideModal()">Close</button></div>`);}
 let sendCtx=null;
 function sendBox(title,subject,text,phone,email,xlf,fmt){const def=xlf?xlf():null;if(!def)return toast('Nothing to send');sendCtx={def,subject,phone:phone||'',email:email||'',fmt:fmt||'xlsx'};drawSend(title);}
 function drawSend(title){const c=sendCtx,base=c.def.name.replace(/\.xlsx$/,''),nm={xlsx:base+'.xlsx',pdf:base+'.pdf',png:base+'.png'}[c.fmt];
-  showModal(`<h3>${esc(title||'Send')}</h3><div class="note" style="margin-bottom:10px">The document is sent as a file. Choose the file type, then WhatsApp or Email — the phone's share list opens with the file attached.</div>
+  showModal(`<h3>${esc(title||'Send')}</h3><div class="note" style="margin-bottom:10px">The document is sent as a file. Choose the file type, then WhatsApp or email — the phone's share list opens with the file attached.</div>
    ${c.phone||c.email?`<div class="card" style="margin:0 0 10px;padding:10px 12px">To: ${[c.phone&&esc(c.phone),c.email&&esc(c.email)].filter(Boolean).join(' · ')}</div>`:''}
    <div class="grid" style="margin-bottom:8px">${[['xlsx','Excel'],['pdf','PDF'],['png','Image']].map(([k,l])=>`<button class="opt ${c.fmt===k?'sel':''}" onclick="sendCtx.fmt='${k}';drawSend(${esc(JSON.stringify(title||'Send'))})">${l}</button>`).join('')}</div>
    <div class="note mono" style="margin-bottom:6px">${esc(nm)}</div>
@@ -1334,19 +1336,19 @@ function contactLines(x){return [x.contact&&'Contact: '+x.contact,x.phone&&'What
 function suppliersText(){let t=hdr('SUPPLIERS');S.sellers.slice().sort((a,b)=>a.name.localeCompare(b.name)).forEach(z=>{t+=`${z.code} — ${z.name}\n${contactLines(z)}\nItems supplied: ${S.items.filter(i=>i.seller===z.id||(i.alts||[]).includes(z.id)).map(i=>i.name).join(', ')||'—'}\n\n`;});return t.trim();}
 function clientsText(){let t=hdr('CLIENTS');S.clients.filter(c=>!c.internal).sort((a,b)=>a.name.localeCompare(b.name)).forEach(c=>{t+=`${c.code} — ${c.name}\n${contactLines(c)}\nInvoices: ${relList(c.id).length}\n\n`;});return t.trim();}
 function clientText(c){let t=hdr('CLIENT '+c.code+' — '+c.name)+(contactLines(c)?contactLines(c)+'\n':'')+(c.notes?'Notes: '+c.notes+'\n':'');const rl=relList(c.id);
-  t+=`\nInvoices / releases (${rl.length}):\n`;rl.forEach(m=>{t+=`${m.cinv||'—'} · ${fdt(m.t)} · release ${m.rel}${m.order?' · PO '+m.order:''}${m.recip?' · recipient '+m.recip:''}${m.sales?' · sales person '+m.sales:''}\n`;
+  t+=`\nInvoices / releases (${rl.length}):\n`;rl.forEach(m=>{t+=`${m.cinv||'—'} · ${fdt(m.t)} · release ${m.rel}${m.order?' · PO '+m.order:''}${m.recip?' · recipient '+m.recip:''}${m.sales?' · salesperson '+m.sales:''}\n`;
     relLines(m.rel).forEach(x=>{const it=item(x.itemId);t+=`   - ${it?it.name:'(item)'} — ${fq(x.qty,it?it.unit:'')}\n`;});});return t.trim();}
-function relsText(){let t=hdr('RECENT HAND-OUTS');relList().slice(0,40).forEach(m=>{const c=client(m.client);t+=`${m.cinv||'—'} · ${m.rel} · ${fdt(m.t)} · ${c?c.name:'(deleted client)'}${m.order?' · PO '+m.order:''}${m.recip?' · recipient '+m.recip:''}${m.sales?' · sales person '+m.sales:''}\n`;});return t.trim();}
+function relsText(){let t=hdr('RECENT HAND-OUTS');relList().slice(0,40).forEach(m=>{const c=client(m.client);t+=`${m.cinv||'—'} · ${m.rel} · ${fdt(m.t)} · ${c?c.name:'(deleted client)'}${m.order?' · PO '+m.order:''}${m.recip?' · recipient '+m.recip:''}${m.sales?' · salesperson '+m.sales:''}\n`;});return t.trim();}
 function grnText(g){const sl=seller(g.sup);let t=hdr('GOODS RECEIVED NOTE '+g.grn)+`Supplier: ${sl?sl.name:'—'}${g.inv?'\nSupplier invoice: '+g.inv:''}\n\n`;
   g.lots.map(lot).filter(Boolean).forEach((l,i)=>{const it=item(l.itemId);t+=`${i+1}. ${it.name} [${it.sku}] — ${fq(l.qtyIn,it.unit)} · lot ${l.lot}${l.supLot?' · supplier lot '+l.supLot:''}${l.exp?' · expiry '+fd(l.exp):''}\n`;});return t.trim();}
 function shareBox(title,url,label,text,to){shareTxt=text;
   showModal(`<h3>${esc(title)}</h3>${to?`<div class="note" style="margin-bottom:8px">To: <b style="user-select:all">${esc(to)}</b></div>`:''}
    <textarea id="shT" readonly style="min-height:150px">${esc(text)}</textarea>
-   <div class="acts"><a class="btn pri" href="${esc(url)}" target="_blank" rel="noopener">${esc(label)}</a><button onclick="copyShare()">Copy message</button><button onclick="hideModal()">Close</button></div>
+   <div class="acts"><a class="btn pri" href="${esc(url)}" target="_blank" rel="noopener">${esc(label)}</a><button onclick="copyShare()">Copy</button><button onclick="hideModal()">Close</button></div>
    <div class="note" style="margin-top:8px">If the app does not open, copy the message and paste it into WhatsApp or your email.</div>`);}
 function copyShare(){const done=()=>toast('Message copied');try{navigator.clipboard.writeText(shareTxt).then(done,()=>{const t=$('shT');t.focus();t.select();toast('Message selected — copy it');});}catch(e){const t=$('shT');t.focus();t.select();toast('Message selected — copy it');}}
 function vReq(){const wa=!!waNum(S.set.boPhone),em=EMAIL_RE.test(S.set.boEmail||'');addLow(true);
-  return `<h2>New Stock Request</h2>
+  return `<h2>New stock request</h2>
   <div class="note" style="margin-bottom:10px">Low and out-of-stock items are added automatically with a suggested quantity (up to twice the reorder level). Items already requested and not yet received are left out. Change or remove any line.</div>
   <div class="card"><div class="hd" style="align-items:center"><div><b>Scan items in the store</b><div class="note">Scan the QR label on the shelf, item or lot. The item is added and you type the quantity needed.</div></div>
    <button class="pri big" onclick="scanReq()">Scan</button></div></div>
@@ -1358,8 +1360,8 @@ function vReq(){const wa=!!waNum(S.set.boPhone),em=EMAIL_RE.test(S.set.boEmail||
    <td><button class="sm bad" onclick="draft.skip=(draft.skip||[]).concat(draft.lines[${x}].itemId?[draft.lines[${x}].itemId]:[]);draft.lines.splice(${x},1);render()">✕</button></td></tr>`;}).join('')||'<tr><td colspan="5" class="note">No low or out-of-stock items. Add items below or scan them.</td></tr>'}
   </tbody></table><div class="acts"><button onclick="draft.lines.push({itemId:'',qty:'',unit:'pcs'});render()">+ Item</button><button onclick="draft.skip=[];addLow()">Refresh</button></div><div class="note" style="margin-top:6px">+ Item: add another item. Refresh: add low / out-of-stock items again.</div></div>
   <div class="card form2"><label>Requested by<input value="${esc(draft.by)}" oninput="draft.by=this.value"></label><label>Order notes<input value="${esc(draft.note)}" placeholder="e.g. urgent, deliver before Friday" oninput="draft.note=this.value"></label>
-   <div class="acts" style="margin-top:0"><button class="pri" onclick="sendReq()">Send to purchasing</button></div>
-   <div class="note" style="margin-top:6px">Send to purchasing: makes the Excel request sheet automatically, saves it in Saved documents and opens WhatsApp / Email with the sheet attached.${wa||em?' Purchasing: '+[S.set.boPhone,S.set.boEmail].filter(Boolean).map(esc).join(' · '):''}</div>
+   <div class="acts" style="margin-top:0"><button class="pri" onclick="sendReq()">→ Purchasing</button></div>
+   <div class="note" style="margin-top:6px">→ Purchasing: makes the Excel request sheet automatically, saves it in Saved documents and opens WhatsApp or email with the sheet attached.${wa||em?' Purchasing: '+[S.set.boPhone,S.set.boEmail].filter(Boolean).map(esc).join(' · '):''}</div>
    ${wa||em?'':`<div class="note" style="margin-top:4px">Set the purchasing WhatsApp number and email in <a onclick="go('set')">Settings</a>.</div>`}</div>
   <h2>Request log</h2>${reqLog()}`;}
 
@@ -1390,8 +1392,8 @@ function reqLog(){if(!S.reqs.length)return '<div class="card note">No requests s
 function markGot(id){const r=S.reqs.find(x=>x.id===id);r.status='Received';r.got=today();save();render();toast('Marked received. Receive each item in Receive to create lots.');}
 
 /* ================= ITEMS ================= */
-function vItems(){return `<h2>Items</h2><div class="acts" style="margin:0 0 12px">${canItems()?`<button class="pri" onclick="go('itemEdit','new')">+ New</button>`:''}<button class="pri" onclick="openScan()">Scan</button><button onclick="labelPng(S.items.slice().sort((a,b)=>a.sku.localeCompare(b.sku)).map(itemLabelData),'Item-labels.png')">QR labels</button><button onclick="sendBox('Send items list','Items list',itemsText(),'','',defItems)">Send</button></div>
-  <div class="note" style="margin:-4px 0 12px">${canItems()?'+ New: add a new item. ':''}Scan: open an item by its QR label. QR labels: print labels for all items. Send: items list as a file by WhatsApp / email.</div>
+function vItems(){return `<h2>Items</h2><div class="acts" style="margin:0 0 12px">${canItems()?`<button class="pri" onclick="go('itemEdit','new')">+ New</button>`:''}<button class="pri" onclick="openScan()">Scan</button><button onclick="labelPng(S.items.slice().sort((a,b)=>a.sku.localeCompare(b.sku)).map(itemLabelData),'Item-labels.png')">↓ QR labels</button><button onclick="sendBox('Send items list','Items list',itemsText(),'','',defItems)">Send</button></div>
+  <div class="note" style="margin:-4px 0 12px">${canItems()?'+ New: add a new item. ':''}Scan: open an item by its QR label. ↓ QR labels: print labels for all items. Send: items list as a file by WhatsApp / email.</div>
   <div class="card scroll"><table><thead><tr><th>SKU</th><th>Item</th><th>Category</th><th>Unit</th><th>In hand</th><th>Lots in stock</th><th>Next expiry</th><th>Main supplier</th><th>Other suppliers</th></tr></thead><tbody>
   ${S.items.slice().sort((a,b)=>a.sku.localeCompare(b.sku)).map(it=>`<tr class="click" onclick="go('item','${it.id}')"><td class="mono">${esc(it.sku)}</td><td>${esc(it.name)}</td><td>${CATS[it.cat]||''}</td><td>${esc(unitLabel(it))}</td><td class="num">${fq(stat(it).hand,it.unit)}</td><td class="num">${S.lots.filter(l=>l.itemId===it.id&&l.qtyLeft>1e-9).length}</td><td style="white-space:nowrap">${(()=>{const x=stat(it);return x.next?fd(x.next)+expTag(x.next):'—';})()}${stat(it).exp?' <span class="tag bad">expired lot</span>':''}</td><td>${esc((seller(it.seller)||{}).name||'—')}</td><td>${(it.alts||[]).map(seller).filter(Boolean).map(x=>esc(x.name)).join(', ')||'—'}</td></tr>`).join('')}
   </tbody></table></div>`;}
@@ -1399,20 +1401,20 @@ function canItems(){return AUTH.isAdmin();}
 function vItemEdit(){if(!canItems())return `<div class="card note">Only Admin can add, edit or delete items.</div>`;const nw=param==='new',it0=nw?{name:'',cat:'RM',unit:'pcs',pack:{type:'bottle',q:'',u:'g'},reorder:0,seller:'',alts:[],notes:'',sku:''}:item(param);if(!it0)return nf();
   const it=itemPre?Object.assign({},it0,{name:itemPre.name||it0.name,unit:'pcs',seller:itemPre.sup||it0.seller}):it0;
   const hasLots=!nw&&S.lots.some(l=>l.itemId===it.id);
-  return `<h2>${nw?'Add new item':'Edit item'}</h2><div class="card form2">
+  return `<div class="acts top"><button onclick="itemPre=null;${nw?"go('items')":`go('item','${it.id}')`}">← Back</button></div><h2>${nw?'Add new item':'Edit item'}</h2><div class="card form2">
    <div class="note" style="margin-bottom:8px">Enter the details manually, or scan a product label, invoice or ingredient list to fill them.</div>
-   <div class="acts" style="margin:0 0 12px"><button class="pri" onclick="pickDoc('itemForm',true)">Scan</button><button onclick="pickDoc('itemForm',false)">Attach file</button></div>
+   <div class="acts" style="margin:0 0 12px"><button class="pri" onclick="pickDoc('itemForm',true)">Scan</button><button onclick="pickDoc('itemForm',false)">↑ Attach file</button></div>
    ${itemPre?`<div class="note" style="margin-bottom:10px">Filled from: ${esc(itemPre.file)}. Check every field.${scanInfo.unclear.length?' <b style="color:var(--warn)">Some parts were not clear — fill in the blanks.</b>':''}</div>`:''}
    <label>Item name<input id="eN" value="${esc(it.name)}" ${nw?`oninput="$('eS').placeholder=nextSku(this.value)"`:''}></label>
    <label>Category<select id="eC">${Object.entries(CATS).map(([k,v])=>`<option value="${k}" ${k===it.cat?'selected':''}>${v}</option>`).join('')}</select></label>
    <label>SKU / product no.${nw?' — leave blank for an automatic number from the item name initials':''}<input id="eS" value="${esc(it.sku)}" placeholder="${nw?'type the item name first':''}"></label>
-   <div class="two"><label>Counted in<select id="ePt">${PACKS.map(x=>`<option value="${x}" ${x===pkType(it)?'selected':''}>${x==='no.'?'no. (pieces)':pkName({pack:{type:x}})}</option>`).join('')}</select></label>
+   <div class="two"><label>Counted in<select id="ePt">${PACKS.map(x=>`<option value="${x}" ${x===pkType(it)?'selected':''}>${x==='no.'?'no. (pcs)':pkName({pack:{type:x}})}</option>`).join('')}</select></label>
     <label>Contents of one pack<div class="row"><input id="ePq" type="number" min="0" step="any" inputmode="decimal" value="${esc((it.pack||{}).q||'')}" placeholder="e.g. 750"><select id="ePu" style="width:90px">${['g','kg','ml','L'].map(u=>`<option ${u===((it.pack||{}).u||'g')?'selected':''}>${u}</option>`).join('')}</select></div></label></div>
-   <div class="note" style="margin:-4px 0 10px">Stock is counted in bottles, packets, cans, no. and so on. The weight or volume is only what is inside one pack (e.g. 750 ml bottle, 1 kg packet). Leave it empty if not needed.</div>
+   <div class="note" style="margin:-4px 0 10px">Stock is counted in bottles, packets, cans, pcs and so on. The weight or volume is only what is inside one pack (e.g. 750 ml bottle, 1 kg packet). Leave it empty if not needed.</div>
    <label>Main supplier<select id="eSe"><option value="">—</option>${sellerOpts(it.seller)}</select></label>
    <label>Other suppliers${S.sellers.length?`<div class="chk2">${S.sellers.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(x=>`<label><input type="checkbox" class="altc" value="${x.id}" ${(it.alts||[]).includes(x.id)?'checked':''}>${esc(x.name)}</label>`).join('')}</div>`:'<div class="note">No suppliers yet. Add them in Suppliers.</div>'}</label>
    <label>Notes<input id="eNo" value="${esc(it.notes||'')}"></label>
-   <div class="acts"><button class="pri" onclick="saveItem('${nw?'new':it.id}')">Save item</button><button onclick="${nw?"go('items')":`go('item','${it.id}')`}">Cancel</button>${!nw&&!hasLots?`<button class="bad" onclick="delItem('${it.id}')">Delete item</button>`:''}</div></div>`;}
+   <div class="acts"><button class="pri" onclick="saveItem('${nw?'new':it.id}')">Save</button><button onclick="${nw?"go('items')":`go('item','${it.id}')`}">Cancel</button>${!nw&&!hasLots?`<button class="bad" onclick="delItem('${it.id}')">Delete</button>`:''}</div></div>`;}
 function saveItem(id){if(!canItems())return toast('Only Admin can add or edit items');const name=$('eN').value.trim();if(!name)return toast('Enter the item name');
   const cat=$('eC').value;let sku=$('eS').value.trim().toUpperCase();
   if(sku&&S.items.some(i=>i.sku.toUpperCase()===sku&&i.id!==id))return toast('SKU '+sku+' is already used');
@@ -1425,15 +1427,15 @@ function saveItem(id){if(!canItems())return toast('Only Admin can add or edit it
 async function delItem(id){if(!canItems())return toast('Only Admin can delete items');const it=item(id);if(!(await ask('Delete item '+it.name+'?')))return;S.items=S.items.filter(i=>i.id!==id);save();go('items');}
 
 /* ================= SELLERS ================= */
-function vSellers(){return `<h2>Suppliers</h2><div class="acts" style="margin:0 0 12px"><button class="pri" onclick="go('sellerEdit','new')">+ Supplier</button><button onclick="pickDoc('supNew',true)">Scan</button><button onclick="pickDoc('supNew',false)">Attach file</button><button onclick="sendBox('Send suppliers list','Suppliers list','','','',defSuppliers,'pdf')">Send</button></div>
+function vSellers(){return `<h2>Suppliers</h2><div class="acts" style="margin:0 0 12px"><button class="pri" onclick="go('sellerEdit','new')">+ Supplier</button><button onclick="pickDoc('supNew',true)">Scan</button><button onclick="pickDoc('supNew',false)">↑ Attach file</button><button onclick="sendBox('Send suppliers list','Suppliers list','','','',defSuppliers,'pdf')">Send</button></div>
   ${S.sellers.length?`<div class="card scroll"><table><thead><tr><th>Code</th><th>Supplier</th><th>Contact person</th><th>WhatsApp</th><th>Email</th><th>Address</th><th>Items supplied</th><th>Lots received</th></tr></thead><tbody>
   ${S.sellers.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(s=>`<tr class="click" onclick="go('sellerEdit','${s.id}')"><td class="mono">${esc(s.code)}</td><td>${esc(s.name)}</td><td>${esc(s.contact||'—')}</td><td>${esc(s.phone||'—')}</td><td>${esc(s.email||'—')}</td><td>${esc(s.address||'—')}</td><td>${S.items.filter(i=>i.seller===s.id||(i.alts||[]).includes(s.id)).length}</td><td>${S.lots.filter(l=>l.seller===s.id).length}</td></tr>`).join('')}
   </tbody></table></div>`:'<div class="card note">No suppliers yet.</div>'}`;}
 function vSellerEdit(){const nw=param==='new',s0=nw?{name:'',contact:'',phone:'',email:'',address:'',notes:''}:seller(param);if(!s0)return nf();const used=!nw&&S.lots.some(l=>l.seller===s0.id);
   const s=supPre?Object.assign({},s0,{name:supPre.name||s0.name,phone:supPre.phone||s0.phone,email:supPre.email||s0.email,address:supPre.address||s0.address}):s0;
-  return `<h2>${nw?'Add supplier':'Supplier '+esc(s.code)}</h2><div class="card form2">
+  return `<div class="acts top"><button onclick="supPre=null;go(retView||'sellers');retView=null">← Back</button></div><h2>${nw?'Add supplier':'Supplier '+esc(s.code)}</h2><div class="card form2">
    <div class="note" style="margin-bottom:8px">Enter the details manually, or scan the supplier's invoice or receipt to fill them.</div>
-   <div class="acts" style="margin:0 0 12px"><button class="pri" onclick="pickDoc('supForm',true)">Scan</button><button onclick="pickDoc('supForm',false)">Attach file</button></div>
+   <div class="acts" style="margin:0 0 12px"><button class="pri" onclick="pickDoc('supForm',true)">Scan</button><button onclick="pickDoc('supForm',false)">↑ Attach file</button></div>
    ${supPre?`<div class="note" style="margin-bottom:10px">Filled from: ${esc(supPre.file)}. Check every field.${supPre.phones&&supPre.phones.length>1?' Other numbers found: '+supPre.phones.slice(1).map(esc).join(', '):''}</div>`:''}
    <label>Supplier / company name<input id="sN" value="${esc(s.name)}"></label>
    <label>Contact person<input id="sC" value="${esc(s.contact)}"></label>
@@ -1448,7 +1450,7 @@ function vSellerEdit(){const nw=param==='new',s0=nw?{name:'',contact:'',phone:''
      return `<tr><td>${esc(i.name)}<div class="note">${esc(i.sku)}</div></td><td><select class="lnk" data-item="${i.id}" style="min-width:150px"><option value="" ${v===''?'selected':''}>—</option><option value="main" ${v==='main'?'selected':''}>Main supplier</option><option value="alt" ${v==='alt'?'selected':''}>Other supplier</option></select></td><td>${esc(cm?cm.name:'—')}</td></tr>`;}).join('')}
    </tbody></table></div>
   <div class="card form2" style="border:none;background:none;padding:0">
-   <div class="acts"><button class="pri" onclick="saveSeller('${nw?'new':s.id}')">Save supplier</button><button onclick="go(retView||'sellers');retView=null">Cancel</button>${!nw&&!used?`<button class="bad" onclick="delSeller('${s.id}')">Delete supplier</button>`:''}</div></div>`;}
+   <div class="acts"><button class="pri" onclick="saveSeller('${nw?'new':s.id}')">Save</button><button onclick="go(retView||'sellers');retView=null">Cancel</button>${!nw&&!used?`<button class="bad" onclick="delSeller('${s.id}')">Delete</button>`:''}</div></div>`;}
 function supLots(sid){const ls=S.lots.filter(l=>l.seller===sid).sort((a,b)=>b.created-a.created);
   return `<h2>Lots received from this supplier (${ls.length})</h2>`+(ls.length?`<div class="card scroll"><table><thead><tr><th>Received</th><th>Our lot no.</th><th>Supplier batch no.</th><th>Item</th><th>GRN / invoice</th><th>Qty received</th><th>Remaining</th><th>Expiry</th></tr></thead><tbody>
   ${ls.map(l=>{const it=item(l.itemId)||{name:'(deleted)',unit:''};return `<tr class="click" onclick="go('lot','${l.id}')"><td>${fd(l.recv)}</td><td class="mono">${esc(l.lot)}</td><td class="mono">${esc(l.supLot||'—')}</td><td>${esc(it.name)}</td><td>${esc(l.grn||'—')}${l.inv?`<div class="note">Inv ${esc(l.inv)}</div>`:''}</td><td>${fq(l.qtyIn,it.unit)}</td><td class="num">${fq(l.qtyLeft,it.unit)}</td><td style="white-space:nowrap">${l.exp?fd(l.exp)+expTag(l.exp):'—'}</td></tr>`;}).join('')}
@@ -1471,7 +1473,7 @@ function histList(){const q=hist.q.trim().toLowerCase(),pr=recipeById(hist.prod)
     if(!q)return true;const it=item(m.itemId),sl=l&&seller(l.seller),rp=m.prod&&recipeById(m.prod),cl=m.client&&client(m.client);
     return [cl&&cl.name,m.rel,m.order,m.cinv,m.sales,m.recip,it&&it.name,it&&it.sku,l&&l.lot,l&&l.supLot,l&&l.grn,l&&l.inv,sl&&sl.name,sl&&sl.phone,sl&&sl.email,rp&&rp.name,m.ref,m.by,TYPE[m.type],fdt(m.t)].some(v=>v&&String(v).toLowerCase().includes(q));});}
 function histDesc(){const pr=recipeById(hist.prod),it=item(hist.item),sl=seller(hist.sup),cl=client(hist.cli);
-  return [hist.type?TYPE[hist.type]:'All movement types',pr?'Product: '+pr.name:'',it?'Item: '+it.name:'All items',sl?'Supplier: '+sl.name:'',cl?'Client: '+cl.name:'',hist.sales?'Sales person: '+hist.sales:'',hist.q?'Search: "'+hist.q+'"':''].filter(Boolean).join(' · ');}
+  return [hist.type?TYPE[hist.type]:'All movement types',pr?'Product: '+pr.name:'',it?'Item: '+it.name:'All items',sl?'Supplier: '+sl.name:'',cl?'Client: '+cl.name:'',hist.sales?'Salesperson: '+hist.sales:'',hist.q?'Search: "'+hist.q+'"':''].filter(Boolean).join(' · ');}
 function histRows(list,rep){return list.map(m=>{const it=item(m.itemId),l=lot(m.lotId),sl=l&&seller(l.seller),rp=m.prod&&recipeById(m.prod),cl=m.client&&client(m.client),u=it?it.unit:'';
   return `<tr><td style="white-space:nowrap">${fdt(m.t)}</td><td>${tLabel(m)}</td><td>${esc(it?it.name:'(deleted item)')}<div class="note">${esc(it?it.sku:'')}</div></td>
    <td class="mono">${l?(rep?esc(l.lot):`<a onclick="go('lot','${l.id}')">${esc(l.lot)}</a>`):'—'}</td><td>${esc(l&&l.supLot||'—')}</td>
@@ -1486,15 +1488,15 @@ function vHist(){const list=histList();
    <label>Item<select onchange="hist.item=this.value;render()"><option value="">All items</option>${itemOpts(hist.item)}</select></label>
    <label>Supplier<select onchange="hist.sup=this.value;render()"><option value="">All suppliers</option>${sellerOpts(hist.sup)}</select></label>
    <label>Client<select onchange="hist.cli=this.value;render()"><option value="">All clients</option><option value="inhouse" ${hist.cli==='inhouse'?'selected':''}>In-house production</option>${clientOpts(hist.cli)}</select></label>
-   <label>Sales person<select onchange="hist.sales=this.value;render()"><option value="">All sales persons</option>${salesNames().map(n=>`<option value="${esc(n)}" ${hist.sales===n?'selected':''}>${esc(n)}</option>`).join('')}</select></label></div>
-   <label style="margin-bottom:0">Search any word: item, supplier, client, sales person, product, invoice, GRN, release note, person<div class="row"><input id="hq" placeholder="e.g. pepper, soya sauce, Nimal" value="${esc(hist.q)}" onkeydown="if(event.key==='Enter'){hist.q=this.value;render()}"><button class="pri" onclick="hist.q=$('hq').value;render()">Search</button></div></label>
+   <label>Salesperson<select onchange="hist.sales=this.value;render()"><option value="">All salespeople</option>${salesNames().map(n=>`<option value="${esc(n)}" ${hist.sales===n?'selected':''}>${esc(n)}</option>`).join('')}</select></label></div>
+   <label style="margin-bottom:0">Search any word: item, supplier, client, salesperson, product, invoice, GRN, release note, person<div class="row"><input id="hq" placeholder="e.g. pepper, soya sauce, Nimal" value="${esc(hist.q)}" onkeydown="if(event.key==='Enter'){hist.q=this.value;render()}"><button class="pri" onclick="hist.q=$('hq').value;render()">Search</button></div></label>
    <div class="acts"><button onclick="hist={type:'',prod:'',item:'',sup:'',cli:'',sales:'',q:''};render()">Reset</button><button class="pri" ${list.length?'':'disabled'} onclick="go('histRep')">Report</button><span class="note" style="align-self:center">${list.length} movement(s) found</span></div></div>
   ${list.length?`<div class="card scroll"><table><thead>${HIST_HEAD}</thead><tbody>${histRows(list.slice(0,500),false)}</tbody></table></div>`:'<div class="card note">No movements match.</div>'}`;}
 function repHtml(){const list=histList();
   return `<div class="rep"><div class="rh"><div><h1>Stock movement report</h1><div>${esc(S.set.biz)} · Generated ${fdt(Date.now())}</div><div>${esc(histDesc())} · ${list.length} movement(s)</div></div><img src="logo.png" alt="" onerror="this.remove()"></div>
   <table><thead>${HIST_HEAD}</thead><tbody>${histRows(list,true)||'<tr><td colspan="11">No movements.</td></tr>'}</tbody></table>
   <div class="rf"><span>Vanguard Logic Development</span><span>© 2026 Vanguard Logic Development. All rights reserved. For illustration only, not to scale. No copying or distribution without written permission.</span></div></div>`;}
-function vHistRep(){return `<div class="acts top" style="margin-bottom:12px"><button onclick="go('hist')">← History</button><button class="pri" onclick="xlHist()">Download Excel</button><button class="pri" onclick="shareHist()">Send</button></div><div class="paper">${repHtml()}</div>`;}
+function vHistRep(){return `<div class="acts top" style="margin-bottom:12px"><button onclick="go('hist')">← History</button><button class="pri" onclick="xlHist()">↓ Excel</button><button class="pri" onclick="shareHist()">Send</button></div><div class="paper">${repHtml()}</div>`;}
 function histText(max){const list=histList();let t=`STOCK MOVEMENT REPORT\n${S.set.biz}\nGenerated ${fdt(Date.now())}\n${histDesc()} · ${list.length} movement(s)\n\n`;
   list.slice(0,max).forEach(m=>{const it=item(m.itemId),l=lot(m.lotId),sl=l&&seller(l.seller),rp=m.prod&&recipeById(m.prod),cl=m.client&&client(m.client);
     t+=[fdt(m.t),tLabel(m),it?it.name:'(item)',(m.qty>0?'+':'')+fq(m.qty,it?it.unit:''),l?'Lot '+l.lot:'',l&&l.supLot?'Supplier lot '+l.supLot:'',sl?sl.name:'',l&&l.grn?l.grn:'',l&&l.inv?'Inv '+l.inv:'',l&&l.exp?'Exp '+fd(l.exp):'',rp?rp.name:'',cl?'Client '+cl.name:'',m.cinv?'Invoice '+m.cinv:'',m.rel?'Release '+m.rel:'',m.sales?'Sales '+m.sales:'',m.by||''].filter(Boolean).join(' | ')+'\n';});
@@ -1506,7 +1508,7 @@ function vSet(){const A=AUTH.isAdmin();return `${AUTH.accountPanel()}${AUTH.user
   <label>Business name (used in requests and reports)<input id="tB" value="${esc(S.set.biz)}"></label>
   <div class="two"><label>Purchasing WhatsApp number (stock requests)<input id="tBP" type="tel" value="${esc(S.set.boPhone)}" placeholder="e.g. 0771234567"></label><label>Purchasing email (stock requests)<input id="tBE" type="email" value="${esc(S.set.boEmail)}"></label></div>
   <div class="two"><label>Country code for WhatsApp numbers<input id="tC" value="${esc(S.set.cc)}" inputmode="numeric"></label><label>Warn when expiry is within (days)<input id="tW" type="number" min="1" value="${S.set.warn}"></label></div>
-  <button class="pri" onclick="saveSet()">Save settings</button></div>`:''}
+  <button class="pri" onclick="saveSet()">Save</button></div>`:''}
   <h2>Reorder levels</h2><div class="card scroll"><div class="note" style="margin-bottom:8px">Set the minimum stock for each item. When the usable stock falls to this level or below, the item shows LOW and flashes yellow. Leave blank for no level.</div>
    <table><thead><tr><th>Item</th><th>In hand</th><th>Reorder level</th><th>Unit</th></tr></thead><tbody>
    ${S.items.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(it=>`<tr><td>${esc(it.name)}<div class="note">${esc(it.sku)}</div></td><td style="white-space:nowrap">${fq(stat(it).usable,it.unit)}</td>
@@ -1515,22 +1517,22 @@ function vSet(){const A=AUTH.isAdmin();return `${AUTH.accountPanel()}${AUTH.user
   <h2>Import from documents</h2>
   <div class="two">
    <div class="card"><h3>Supplier from invoice</h3><p class="note" style="margin-top:0">Scan or upload a supplier's invoice (Word, Excel, PowerPoint, PDF, CSV or image). The supplier name, phone, email and address are read for you to check and save. Items on the invoice are listed too.</p>
-    <div class="acts"><button class="pri" onclick="pickDoc('seller',true)">Scan</button><button onclick="pickDoc('seller',false)">Attach file</button></div></div>
+    <div class="acts"><button class="pri" onclick="pickDoc('seller',true)">Scan</button><button onclick="pickDoc('seller',false)">↑ Attach file</button></div></div>
    <div class="card"><h3>Items / ingredients from a document</h3><p class="note" style="margin-top:0">Scan or upload an invoice, order form or ingredient list (Word, Excel, PowerPoint, PDF, CSV or image). Item names, quantities and units are read for you to check and add to Items.</p>
-    <div class="acts"><button class="pri" onclick="pickDoc('items',true)">Scan</button><button onclick="pickDoc('items',false)">Attach file</button></div></div></div>
+    <div class="acts"><button class="pri" onclick="pickDoc('items',true)">Scan</button><button onclick="pickDoc('items',false)">↑ Attach file</button></div></div></div>
   <div class="note" style="margin-bottom:12px">Word, Excel, PowerPoint, OpenDocument, CSV and text files are read on this device. PDF and image (scan) reading needs an internet connection. Google Docs / Sheets: download as .docx, .xlsx or PDF first, then attach. Always check the results before saving.</div>
   ${A?`${S.demo?`<h2>Demo data</h2><div class="card form2"><p class="note" style="margin-top:0">This app contains demo suppliers, clients, stock and movements so you can try it. Remove them before real use. Your items list is kept.</p><button class="bad" onclick="clearDemo()">Remove demo</button></div>`:''}
   <h2>Backup</h2><div class="card form2"><p class="note" style="margin-top:0">All data is stored on this device only. Export a backup file regularly and keep it safe. Importing a backup replaces all data on this device.</p>
-  <div class="acts"><button class="pri" onclick="exportData()">Backup</button><button onclick="$('impBk').click()">Restore</button><input id="impBk" type="file" accept=".json,application/json" hidden onchange="importData(this.files[0])"></div></div>
+  <div class="acts"><button class="pri" onclick="exportData()">↓ Backup</button><button onclick="$('impBk').click()">↑ Restore</button><input id="impBk" type="file" accept=".json,application/json" hidden onchange="importData(this.files[0])"></div></div>
 `:''}`;}
 /* ---------- Developer tools (Developer only) ---------- */
 function devPanel(){const raw=JSON.stringify(S),kb=(raw.length/1024).toFixed(1),us=AUTH.users();
   return `<h2>Developer tools</h2>${cloudCard()}<div class="card form2"><h3>Software</h3>
    <div class="kv"><span>Product</span><b>OptiStox · Next-Gen Smart Inventory Management</b><span>Version</span><b>${esc(AUTH.ver())}</b><span>Data storage key</span><b class="mono">${esc(KEY)}</b><span>Login storage key</span><b class="mono">vld_is_store_demo</b>
    <span>Items / lots / movements</span><b>${S.items.length} / ${S.lots.length} / ${S.moves.length}</b><span>Suppliers / clients</span><b>${S.sellers.length} / ${S.clients.filter(c=>!c.internal).length}</b><span>User logins</span><b>${us.length}</b><span>Data size</span><b>${kb} KB</b></div></div>
-  <div class="card form2"><h3>Data editor</h3><div class="note" style="margin-bottom:8px">All app data as JSON. Edit with care, then Save data. A backup is downloaded before every save.</div>
+  <div class="card form2"><h3>Data editor</h3><div class="note" style="margin-bottom:8px">All app data as JSON. Edit with care, then tap Save. A backup is downloaded before every save.</div>
    <textarea id="devJ" style="min-height:220px;font-family:monospace;font-size:12px">${esc(JSON.stringify(S,null,1))}</textarea>
-   <div class="acts"><button class="pri" onclick="devSave()">Save data</button><button onclick="render()">Reload</button><button onclick="exportFull()">Full backup</button><button onclick="$('impFull').click()">Restore full</button><input id="impFull" type="file" accept=".json,application/json" hidden onchange="importFull(this.files[0])"></div></div>
+   <div class="acts"><button class="pri" onclick="devSave()">Save</button><button onclick="render()">Reload</button><button onclick="exportFull()">↓ Full backup</button><button onclick="$('impFull').click()">↑ Restore full</button><input id="impFull" type="file" accept=".json,application/json" hidden onchange="importFull(this.files[0])"></div></div>
   <div class="card form2"><h3>Reset</h3><div class="acts" style="margin-top:0"><button class="bad" onclick="devReset(true)">Reset demo</button><button class="bad" onclick="devReset(false)">Erase data</button></div></div>
   <div class="card note"><b>Remote access and updates.</b> This file keeps its data on this device only. Remote access from another place needs the online (cloud sync) version of OptiStox. To update the software here, replace this HTML file with the new version — the data and logins on the device stay, because the storage keys are the same.</div>`;}
 async function devSave(){if(!AUTH.isDev())return;let d;try{d=JSON.parse($('devJ').value);}catch(e){return toast('JSON error: '+e.message);}
@@ -1747,7 +1749,7 @@ function buildImp(file,text){const p=parseDoc(text);const unc=scanInfo.unclear.s
     items:p.items.map(x=>({on:true,name:x.name,qty:x.qty,unit:x.unit,match:x.match||'new',cat:'RM'}))};}
 function reImp(){const t=$('impT').value,f=imp?imp.file:'document';buildImp(f,t);render();toast('Text read again');}
 function vImp(){if(!imp)return nf();const x=imp.sel;
-  return `<h2>Check imported data</h2><div class="note" style="margin-bottom:10px">From: ${esc(imp.file)}. Check and correct everything before saving.</div>
+  return `<div class="acts top"><button onclick="imp=null;go('set')">← Back</button></div><h2>Check imported data</h2><div class="note" style="margin-bottom:10px">From: ${esc(imp.file)}. Check and correct everything before saving.</div>
   ${(imp.unclear||[]).length?`<div class="card" style="border-color:var(--warn)"><b style="color:var(--warn)">Some parts were not clear</b><div class="note">Fill in or correct these parts manually:</div><ul class="note" style="margin:6px 0 0 18px;padding:0">${imp.unclear.slice(0,12).map(u=>`<li>${esc(u)}</li>`).join('')}</ul></div>`:''}
   <div class="card form2"><h3>Supplier</h3><label class="inl"><input type="checkbox" ${x.on?'checked':''} onchange="imp.sel.on=this.checked">Save this supplier</label>
    <label>Save as<select onchange="imp.sel.target=this.value"><option value="new">New supplier</option>${S.sellers.map(z=>`<option value="${z.id}" ${z.id===x.target?'selected':''}>Update: ${esc(z.name)}</option>`).join('')}</select></label>
@@ -1766,7 +1768,7 @@ function vImp(){if(!imp)return nf();const x=imp.sel;
      ${r.match==='new'?`<select style="margin-top:6px" onchange="imp.items[${i}].cat=this.value">${Object.entries(CATS).map(([k,v])=>`<option value="${k}" ${k===r.cat?'selected':''}>${v}</option>`).join('')}</select>`:'<div class="note">Already in Items — the supplier will be linked to it</div>'}</td></tr>`).join('')}
    </tbody></table>`:'<div class="note">No item lines with a quantity and unit were found. Correct the text below and press Read again, or add items in Items.</div>'}</div>
   <div class="card"><h3>Text read from the document</h3><textarea id="impT">${esc(imp.text)}</textarea><div class="acts"><button onclick="reImp()">Read again</button></div></div>
-  <div class="acts"><button class="pri big" onclick="saveImp()">Save to system</button><button onclick="imp=null;go('set')">Cancel</button></div>`;}
+  <div class="acts"><button class="pri big" onclick="saveImp()">Save</button><button onclick="imp=null;go('set')">Cancel</button></div>`;}
 function saveImp(){let sid=null,ni=0,nl=0;const x=imp.sel;
   if(x.on){const name=x.name.trim();if(!name)return toast('Enter the supplier name, or untick Save this supplier');
     const email=x.email.trim();if(email&&!EMAIL_RE.test(email))return toast('Check the supplier email');
@@ -1820,15 +1822,15 @@ function defInv(no){const ms=relMoves(no),m=ms[0],c=client(m.client)||{};
   const cols=['#','SKU','Item','Unit','Qty','Our lot no.','Expiry'],rows=[];
   relLines(no).forEach((x,i)=>{const it=item(x.itemId)||{name:'(deleted item)',sku:'',unit:''};x.lots.forEach((k,j)=>rows.push([j?XT(''):{v:i+1,s:'int'},XT(j?'':it.sku),XT(j?'':it.name),XT(j?'':unitLabel(it)),XN(k.q,it.unit),XT(k.lot),XD(k.exp)]));});
   const info=[[],[{v:'Client',s:'bold'},XT((c.code?c.code+' — ':'')+(c.name||'(deleted client)'))],[{v:'Contact',s:'bold'},XT(c.contact)],[{v:'WhatsApp / phone',s:'bold'},XT(c.phone)],[{v:'Email',s:'bold'},XT(c.email)],[{v:'Address',s:'bold'},XT(c.address)],
-    [{v:'PO number',s:'bold'},XT(m.order)],[{v:'Recipient',s:'bold'},XT(m.recip)],[{v:'Sales person',s:'bold'},XT(m.sales)],[{v:'Handed out by',s:'bold'},XT(m.by)],[{v:'Notes',s:'bold'},XT(m.note)]];
+    [{v:'PO number',s:'bold'},XT(m.order)],[{v:'Recipient',s:'bold'},XT(m.recip)],[{v:'Salesperson',s:'bold'},XT(m.sales)],[{v:'Handed out by',s:'bold'},XT(m.by)],[{v:'Notes',s:'bold'},XT(m.note)]];
   return xlDef((c.internal?'Production-issue-':'Invoice-')+(m.cinv||no),docWord(c)+' '+(m.cinv||'—'),'Release note '+no+' · '+fdt(m.t),cols,rows.concat(info),[6,11,34,24,10,17,12]);}
-function defRels(){const cols=['Date & time','Invoice / issue no.','Release note','To','PO number','Recipient','Sales person','Item','Qty','Unit','Handed out by'],rows=[];
+function defRels(){const cols=['Date & time','Invoice / issue no.','Release note','To','PO number','Recipient','Salesperson','Item','Qty','Unit','Handed out by'],rows=[];
   relList().forEach(m=>{const c=client(m.client);relLines(m.rel).forEach(x=>{const it=item(x.itemId)||{name:'',unit:''};rows.push([XDT(m.t),XT(m.cinv),XT(m.rel),XT(c?c.name:'(deleted client)'),XT(m.order),XT(m.recip),XT(m.sales),XT(it.name),XN(x.qty,it.unit),XT(it.unit?uN(it):''),XT(m.by)]);});});
   return xlDef('Hand-outs','Hand-outs to clients and in-house production',relList().length+' hand-out(s)',cols,rows,[17,16,14,24,14,18,18,32,9,6,14]);}
-function defClient(c){const cols=['Date & time','Invoice no.','Release note','PO number','Recipient','Sales person','Item','SKU','Qty','Unit'],rows=[];
+function defClient(c){const cols=['Date & time','Invoice no.','Release note','PO number','Recipient','Salesperson','Item','SKU','Qty','Unit'],rows=[];
   relList(c.id).forEach(m=>relLines(m.rel).forEach(x=>{const it=item(x.itemId)||{name:'',sku:'',unit:''};rows.push([XDT(m.t),XT(m.cinv),XT(m.rel),XT(m.order),XT(m.recip),XT(m.sales),XT(it.name),XT(it.sku),XN(x.qty,it.unit),XT(it.unit?uN(it):'')]);}));
   return xlDef('Client-'+c.code,'Client '+c.code+' — '+c.name,[c.contact,c.phone,c.email,c.address].filter(Boolean).join(' · ')||'No contact details',cols,rows,[17,16,14,14,18,18,32,10,9,6]);}
-function defHist(){const list=histList(),cols=['Date & time','Type','Item','SKU','Our lot no.','Supplier lot','Supplier','Supplier phone','GRN no.','Invoice no.','Expiry','Qty','Unit','Product','Client','Client invoice no.','Release note no.','Sales person','Reference / reason','By'];
+function defHist(){const list=histList(),cols=['Date & time','Type','Item','SKU','Our lot no.','Supplier lot','Supplier','Supplier phone','GRN no.','Invoice no.','Expiry','Qty','Unit','Product','Client','Client invoice no.','Release note no.','Salesperson','Reference / reason','By'];
   const rows=xlHead('Stock movement report',histDesc()+' · '+list.length+' movement(s)',cols);
   list.forEach(m=>{const it=item(m.itemId),l=lot(m.lotId),sl=l&&seller(l.seller),rp=m.prod&&recipeById(m.prod),cl=m.client&&client(m.client);
     rows.push([{v:new Date(m.t),t:'dt'},{v:tLabel(m),s:'txt'},{v:it?it.name:'(deleted item)',s:'txt'},{v:it?it.sku:'',s:'txt'},{v:l?l.lot:'',s:'txt'},{v:l&&l.supLot||'',s:'txt'},
@@ -1901,7 +1903,7 @@ function cloudRefresh(){if(view==='set'&&$('cloudBox'))$('cloudBox').outerHTML=c
 function cloudCard(){const u=CLOUD.user;
   return `<div class="card form2" id="cloudBox"><h3>Cloud (Firebase)</h3>
    <div class="kv"><span>Status</span><b>${esc(u?(CLOUD.err?'Error: '+CLOUD.err:CLOUD.status):CLOUD.status)}</b>${u?`<span>Warehouse login</span><b>${esc(u.email||'')}</b><span>Last sync</span><b>${CLOUD.synced?fdt(CLOUD.synced):'—'}</b>`:''}</div>
-   ${u?`<div class="acts"><button class="pri" onclick="cloudPush(true)">Sync now</button><button class="bad" onclick="cloudDisconnect()">Disconnect</button></div>
+   ${u?`<div class="acts"><button class="pri" onclick="cloudPush(true)">Sync</button><button class="bad" onclick="cloudDisconnect()">Disconnect</button></div>
     <div class="note">Every change on this phone is sent to the cloud and every change from other phones arrives here automatically. Without internet the phone keeps working and syncs later.</div>`
    :`${cloudWeb()?'':'<div class="note" style="margin-bottom:8px;color:var(--warn)">This OptiStox file is opened from phone storage. The cloud works only when OptiStox is opened from its web address: https://migiecmb-byte.github.io/optistox/</div>'}<div class="note" style="margin-bottom:8px">Connect this phone with the warehouse login created in Firebase (Authentication → Users). Do this once on each phone.</div>
     <div class="two"><label>Warehouse email<input id="cE" type="email" autocomplete="off" placeholder="warehouse1@inveniostox.app"></label><label>Password<input id="cP" type="password" autocomplete="off"></label></div>
