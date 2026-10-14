@@ -45,6 +45,7 @@ label.inl{display:flex;align-items:center;gap:8px;margin:0 0 8px}
 label.inl input{width:22px;min-height:0;margin:0;accent-color:var(--gold)}
 .form2{max-width:640px}
 .row{display:flex;align-items:center;gap:10px}
+.smenu{display:grid;grid-template-columns:1fr 1fr;gap:8px}.sitem{display:flex;align-items:center;justify-content:space-between;gap:6px;width:100%;min-width:0;text-align:left;padding:10px 10px 10px 12px;min-height:76px}.sitem span{display:grid;gap:2px;min-width:0}.sitem b{font-size:15px;line-height:1.2}.sitem small{font-size:11.5px;line-height:1.25;color:var(--muted);font-weight:normal}.sitem i{font-style:normal;font-size:24px;font-weight:bold;color:var(--gold);line-height:1}
 .frow{margin:0 0 12px;flex-wrap:wrap}.frow select{flex:1 1 160px;min-width:0}
 input.mask{-webkit-text-security:disc;text-security:disc}
 .ucard{display:grid;gap:6px}.ucard .uhd{display:flex;justify-content:space-between;align-items:center;gap:8px}.ucard .acts{margin:4px 0 0;flex-wrap:wrap}.ucard .acts button{min-width:0;flex:1}
@@ -220,7 +221,7 @@ select:not([multiple]){pointer-events:none}
   <button data-v="clients" onclick="go('clients')">Clients</button>
   <button data-v="hist" onclick="go('hist')">History</button>
   <button data-v="scan" onclick="go('scan')">Scan</button>
-  <button data-v="set" onclick="go('set')">Settings</button>
+  <button data-v="set" onclick="setTab='';go('set')">Settings</button>
 </nav>
 <div id="viewerNote" class="vnote" hidden>Camera, scan and file upload are switched off in this viewer. To use Scan, Scan invoice and Attach file, open <b>OptiStox</b> in <b>Chrome</b>.</div>
 <main id="main"></main>
@@ -1422,7 +1423,7 @@ function vReq(){const wa=!!waNum(S.set.boPhone),em=EMAIL_RE.test(S.set.boEmail||
   <div class="card form2"><label>Requested by<input value="${esc(draft.by)}" oninput="draft.by=this.value"></label><label>Order notes<input value="${esc(draft.note)}" placeholder="e.g. urgent, deliver before Friday" oninput="draft.note=this.value"></label>
    <div class="acts" style="margin-top:0"><button class="pri" onclick="sendReq()">→ Purchasing</button></div>
    <div class="note" style="margin-top:6px">→ Purchasing: makes the Excel request sheet automatically, saves it in Saved documents and opens WhatsApp or email with the sheet attached.${wa||em?' Purchasing: '+[S.set.boPhone,S.set.boEmail].filter(Boolean).map(esc).join(' · '):''}</div>
-   ${wa||em?'':`<div class="note" style="margin-top:4px">Set the purchasing WhatsApp number and email in <a onclick="go('set')">Settings</a>.</div>`}</div>
+   ${wa||em?'':`<div class="note" style="margin-top:4px">Set the purchasing WhatsApp number and email in <a onclick="setTab='biz';go('set')">Settings → Business</a>.</div>`}</div>
   <h2>Request log</h2>${reqLog()}`;}
 
 function scanReq(){openScan(c=>{const r=parseCode(c),it=r.item||(r.lot&&item(r.lot.itemId));if(!it)return toast('Not found: '+c);
@@ -1567,40 +1568,67 @@ function histText(max){const list=histList();let t=`STOCK MOVEMENT REPORT\n${S.s
   if(list.length>max)t+=`\n…and ${list.length-max} more movement(s). See the printed report for the full list.`;return t.trim();}
 function shareHist(){sendBox('Send stock movement report','Stock movement report',histText(60),'','',defHist);}
 /* ================= SETTINGS ================= */
-function vSet(){const A=AUTH.isAdmin();return `${AUTH.accountPanel()}${AUTH.usersPanel()}<h2>Saved documents</h2><div class="note" style="margin-bottom:8px">Every file sent or saved, and a daily data backup, is kept here inside the app on this device.</div><div id="docsBox" class="card note">Loading…</div>${AUTH.isDev()?devPanel():AUTH.isAdmin()?'<h2>Cloud</h2>'+cloudCard():''}
-  ${A?`<h2>Business settings</h2><div class="card form2">
-  <label>Business name (used in requests and reports)<input id="tB" value="${esc(S.set.biz)}"></label>
-  <div class="two"><label>Purchasing WhatsApp number (stock requests)<input id="tBP" type="tel" value="${esc(S.set.boPhone)}" placeholder="e.g. 0771234567"></label><label>Purchasing email (stock requests)<input id="tBE" type="email" value="${esc(S.set.boEmail)}"></label></div>
-  <div class="two"><label>Country code for WhatsApp numbers<input id="tC" value="${esc(S.set.cc)}" inputmode="numeric"></label><label>Warn when expiry is within (days)<input id="tW" type="number" min="1" value="${S.set.warn}"></label></div>
-  <button class="pri" onclick="saveSet()">Save</button></div>`:''}
-  <h2>Reorder levels</h2><div class="card scroll"><div class="note" style="margin-bottom:8px">Set the minimum stock for each item. When the usable stock falls to this level or below, the item shows LOW and flashes yellow. Leave blank for no level.</div>
+let setTab='';
+/* Settings: a menu of sections; each section opens on its own page with ← Settings */
+const SET_SECS=[['acc','My account','Your name and password',()=>true],['users','Users','Add, stop or delete logins',()=>AUTH.isAdmin()],
+ ['docs','Saved documents','Files sent or saved, daily backups',()=>true],['reo','Reorder levels','Low-stock level for each item',()=>true],
+ ['imp','Import','Read suppliers or items from a file',()=>true],['biz','Business','Name, purchasing WhatsApp and email',()=>AUTH.isAdmin()],
+ ['cloud','Cloud','Connect, sync, cloud password',()=>AUTH.isAdmin()],['bak','Backup','↓ Backup and ↑ Restore all data',()=>AUTH.isAdmin()],
+ ['dev','Developer tools','Software, sign-in, data, reset',()=>AUTH.isDev()]];
+function setBack(to,label){return `<div class="acts top"><button onclick="setTab='${to}';render()">← ${label}</button></div>`;}
+function vSet(){const A=AUTH.isAdmin(),sec=SET_SECS.find(x=>x[0]===setTab&&x[3]());
+  if(!sec&&!/^dev-/.test(setTab))return `<h2>Settings</h2><div class="smenu">${SET_SECS.filter(x=>x[3]()).map(x=>`<button class="sitem" onclick="setTab='${x[0]}';render()"><span><b>${x[1]}</b><small>${x[2]}</small></span><i>›</i></button>`).join('')}</div>`;
+  const back=setBack('','Settings');
+  if(/^dev-/.test(setTab))return AUTH.isDev()?setBack('dev','Developer tools')+devPart(setTab):back;
+  switch(setTab){
+   case 'acc':return back+AUTH.accountPanel();
+   case 'users':return back+AUTH.usersPanel();
+   case 'docs':return back+`<h2>Saved documents</h2><div class="note" style="margin-bottom:8px">Every file sent or saved, and a daily data backup, is kept here inside the app on this device.</div><div id="docsBox" class="card note">Loading…</div>`;
+   case 'reo':return back+`  <h2>Reorder levels</h2><div class="card scroll"><div class="note" style="margin-bottom:8px">Set the minimum stock for each item. When the usable stock falls to this level or below, the item shows LOW and flashes yellow. Leave blank for no level.</div>
    <table><thead><tr><th>Item</th><th>In hand</th><th>Reorder level</th><th>Unit</th></tr></thead><tbody>
    ${S.items.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(it=>`<tr><td>${esc(it.name)}<div class="note">${esc(it.sku)}</div></td><td style="white-space:nowrap">${fq(stat(it).usable,it.unit)}</td>
     <td style="min-width:110px"><input class="rl" data-item="${it.id}" type="number" min="0" step="any" inputmode="decimal" value="${it.reorder||''}"></td><td>${esc(unitLabel(it))}</td></tr>`).join('')}
    </tbody></table><div class="acts"><button class="pri" onclick="saveReorder()">Save</button></div></div>
-  <h2>Import from documents</h2>
+`;
+   case 'imp':return back+`  <h2>Import from documents</h2>
   <div class="two">
    <div class="card"><h3>Supplier from invoice</h3><p class="note" style="margin-top:0">Scan or upload a supplier's invoice (Word, Excel, PowerPoint, PDF, CSV or image). The supplier name, phone, email and address are read for you to check and save. Items on the invoice are listed too.</p>
     <div class="acts"><button class="pri" onclick="pickDoc('seller',true)">Scan</button><button onclick="pickDoc('seller',false)">↑ Attach file</button></div></div>
    <div class="card"><h3>Items / ingredients from a document</h3><p class="note" style="margin-top:0">Scan or upload an invoice, order form or ingredient list (Word, Excel, PowerPoint, PDF, CSV or image). Item names, quantities and units are read for you to check and add to Items.</p>
     <div class="acts"><button class="pri" onclick="pickDoc('items',true)">Scan</button><button onclick="pickDoc('items',false)">↑ Attach file</button></div></div></div>
   <div class="note" style="margin-bottom:12px">Word, Excel, PowerPoint, OpenDocument, CSV and text files are read on this device. PDF and image (scan) reading needs an internet connection. Google Docs / Sheets: download as .docx, .xlsx or PDF first, then attach. Always check the results before saving.</div>
-  ${A?`${S.demo?`<h2>Demo data</h2><div class="card form2"><p class="note" style="margin-top:0">This app contains demo suppliers, clients, stock and movements so you can try it. Remove them before real use. Your items list is kept.</p><button class="bad" onclick="clearDemo()">Remove demo</button></div>`:''}
+`;
+   case 'biz':return back+`  ${A?`<h2>Business settings</h2><div class="card form2">
+  <label>Business name (used in requests and reports)<input id="tB" value="${esc(S.set.biz)}"></label>
+  <div class="two"><label>Purchasing WhatsApp number (stock requests)<input id="tBP" type="tel" value="${esc(S.set.boPhone)}" placeholder="e.g. 0771234567"></label><label>Purchasing email (stock requests)<input id="tBE" type="email" value="${esc(S.set.boEmail)}"></label></div>
+  <div class="two"><label>Country code for WhatsApp numbers<input id="tC" value="${esc(S.set.cc)}" inputmode="numeric"></label><label>Warn when expiry is within (days)<input id="tW" type="number" min="1" value="${S.set.warn}"></label></div>
+  <button class="pri" onclick="saveSet()">Save</button></div>`:''}
+`;
+   case 'cloud':return back+'<h2>Cloud</h2>'+cloudCard();
+   case 'bak':return back+`  ${A?`${S.demo?`<h2>Demo data</h2><div class="card form2"><p class="note" style="margin-top:0">This app contains demo suppliers, clients, stock and movements so you can try it. Remove them before real use. Your items list is kept.</p><button class="bad" onclick="clearDemo()">Remove demo</button></div>`:''}
   <h2>Backup</h2><div class="card form2"><p class="note" style="margin-top:0">All data is stored on this device only. Export a backup file regularly and keep it safe. Importing a backup replaces all data on this device.</p>
   <div class="acts"><button class="pri" onclick="exportData()">↓ Backup</button><button onclick="$('impBk').click()">↑ Restore</button><input id="impBk" type="file" accept=".json,application/json" hidden onchange="importData(this.files[0])"></div></div>
-`:''}`;}
+`:''}`;
+   case 'dev':return back+devPanel();}
+  return back;}
 /* ---------- Developer tools (Developer only) ---------- */
-function devPanel(){const raw=JSON.stringify(S),kb=(raw.length/1024).toFixed(1),us=AUTH.users();
-  return `<h2>Developer tools</h2>${cloudCard()}<div class="card form2"><h3>Software</h3>
+const DEV_SECS=[['dev-soft','Software','Version and data size'],['dev-sign','Sign-in','Open access on or off'],['dev-data','Data editor','Edit all data, full backup'],['dev-reset','Reset','Reset demo or erase data']];
+function devPanel(){return `<h2>Developer tools</h2><div class="smenu">${DEV_SECS.map(x=>`<button class="sitem" onclick="setTab='${x[0]}';render()"><span><b>${x[1]}</b><small>${x[2]}</small></span><i>›</i></button>`).join('')}</div>`;}
+function devPart(t){const raw=JSON.stringify(S),kb=(raw.length/1024).toFixed(1),us=AUTH.users();
+  if(t==='dev-soft')return `<div class="card form2"><h3>Software</h3>
    <div class="kv"><span>Product</span><b>OptiStox · Next-Gen Smart Inventory Management</b><span>Version</span><b>${esc(AUTH.ver())}</b><span>Data storage key</span><b class="mono">${esc(KEY)}</b><span>Login storage key</span><b class="mono">vld_is_store</b>
    <span>Items / lots / movements</span><b>${S.items.length} / ${S.lots.length} / ${S.moves.length}</b><span>Suppliers / clients</span><b>${S.sellers.length} / ${S.clients.filter(c=>!c.internal).length}</b><span>User logins</span><b>${us.length}</b><span>Data size</span><b>${kb} KB</b></div></div>
-  <div class="card form2"><h3>Sign-in</h3><div class="note" style="margin-bottom:8px">Open access lets anyone sign in on every screen with empty username and password. Switch it off once user logins are created.</div>
+`;
+  if(t==='dev-sign')return `  <div class="card form2"><h3>Sign-in</h3><div class="note" style="margin-bottom:8px">Open access lets anyone sign in on every screen with empty username and password. Switch it off once user logins are created.</div>
    <label class="inl"><input type="checkbox" ${AUTH.openOn()?'checked':''} onchange="AUTH.setOpen(this.checked);render();toast(this.checked?'Open access on':'Open access off — sign in with username and password')">Open access (empty username and password)</label></div>
-  <div class="card form2"><h3>Data editor</h3><div class="note" style="margin-bottom:8px">All app data as JSON. Edit with care, then tap Save. A backup is downloaded before every save.</div>
+`;
+  if(t==='dev-data')return `  <div class="card form2"><h3>Data editor</h3><div class="note" style="margin-bottom:8px">All app data as JSON. Edit with care, then tap Save. A backup is downloaded before every save.</div>
    <textarea id="devJ" style="min-height:220px;font-family:monospace;font-size:12px">${esc(JSON.stringify(S,null,1))}</textarea>
    <div class="acts"><button class="pri" onclick="devSave()">Save</button><button onclick="render()">Reload</button><button onclick="exportFull()">↓ Full backup</button><button onclick="$('impFull').click()">↑ Restore full</button><input id="impFull" type="file" accept=".json,application/json" hidden onchange="importFull(this.files[0])"></div></div>
-  <div class="card form2"><h3>Reset</h3><div class="acts" style="margin-top:0"><button class="bad" onclick="devReset(true)">Reset demo</button><button class="bad" onclick="devReset(false)">Erase data</button></div></div>
-  <div class="card note"><b>Remote access and updates.</b> This file keeps its data on this device only. Remote access from another place needs the online (cloud sync) version of OptiStox. To update the software here, replace this HTML file with the new version — the data and logins on the device stay, because the storage keys are the same.</div>`;}
+`;
+  if(t==='dev-reset')return `  <div class="card form2"><h3>Reset</h3><div class="acts" style="margin-top:0"><button class="bad" onclick="devReset(true)">Reset demo</button><button class="bad" onclick="devReset(false)">Erase data</button></div></div>
+  <div class="card note"><b>Remote access and updates.</b> This file keeps its data on this device only. Remote access from another place needs the online (cloud sync) version of OptiStox. To update the software here, replace this HTML file with the new version — the data and logins on the device stay, because the storage keys are the same.</div>`;
+  return '';}
 async function devSave(){if(!AUTH.isDev())return;let d;try{d=JSON.parse($('devJ').value);}catch(e){return toast('JSON error: '+e.message);}
   if(!Array.isArray(d.items)||!Array.isArray(d.lots)||!d.set)return toast('Data must contain items, lots and set');
   if(!(await ask('Save the edited data? A backup of the current data is downloaded first.')))return;
@@ -1816,7 +1844,7 @@ function buildImp(file,text){const p=parseDoc(text);const unc=scanInfo.unclear.s
     items:p.items.map(x=>({on:true,name:x.name,qty:x.qty,unit:x.unit,match:x.match||'new',cat:'DG'}))};}
 function reImp(){const t=$('impT').value,f=imp?imp.file:'document';buildImp(f,t);render();toast('Text read again');}
 function vImp(){if(!imp)return nf();const x=imp.sel;
-  return `<div class="acts top"><button onclick="imp=null;go('set')">← Back</button></div><h2>Check imported data</h2><div class="note" style="margin-bottom:10px">From: ${esc(imp.file)}. Check and correct everything before saving.</div>
+  return `<div class="acts top"><button onclick="imp=null;setTab='imp';go('set')">← Back</button></div><h2>Check imported data</h2><div class="note" style="margin-bottom:10px">From: ${esc(imp.file)}. Check and correct everything before saving.</div>
   ${(imp.unclear||[]).length?`<div class="card" style="border-color:var(--warn)"><b style="color:var(--warn)">Some parts were not clear</b><div class="note">Fill in or correct these parts manually:</div><ul class="note" style="margin:6px 0 0 18px;padding:0">${imp.unclear.slice(0,12).map(u=>`<li>${esc(u)}</li>`).join('')}</ul></div>`:''}
   <div class="card form2"><h3>Supplier</h3><label class="inl"><input type="checkbox" ${x.on?'checked':''} onchange="imp.sel.on=this.checked">Save this supplier</label>
    <label>Save as<select onchange="imp.sel.target=this.value"><option value="new">New supplier</option>${S.sellers.map(z=>`<option value="${z.id}" ${z.id===x.target?'selected':''}>Update: ${esc(z.name)}</option>`).join('')}</select></label>
@@ -1835,7 +1863,7 @@ function vImp(){if(!imp)return nf();const x=imp.sel;
      ${r.match==='new'?`<select style="margin-top:6px" onchange="imp.items[${i}].cat=this.value">${Object.entries(CATS).map(([k,v])=>`<option value="${k}" ${k===r.cat?'selected':''}>${v}</option>`).join('')}</select>`:'<div class="note">Already in Items — the supplier will be linked to it</div>'}</td></tr>`).join('')}
    </tbody></table>`:'<div class="note">No item lines with a quantity and unit were found. Correct the text below and press Read again, or add items in Items.</div>'}</div>
   <div class="card"><h3>Text read from the document</h3><textarea id="impT">${esc(imp.text)}</textarea><div class="acts"><button onclick="reImp()">Read again</button></div></div>
-  <div class="acts"><button class="pri big" onclick="saveImp()">Save</button><button onclick="imp=null;go('set')">Cancel</button></div>`;}
+  <div class="acts"><button class="pri big" onclick="saveImp()">Save</button><button onclick="imp=null;setTab='imp';go('set')">Cancel</button></div>`;}
 function saveImp(){let sid=null,ni=0,nl=0;const x=imp.sel;
   if(x.on){const name=x.name.trim();if(!name)return toast('Enter the supplier name, or untick Save this supplier');
     const email=x.email.trim();if(email&&!EMAIL_RE.test(email))return toast('Check the supplier email');
@@ -1850,7 +1878,7 @@ function saveImp(){let sid=null,ni=0,nl=0;const x=imp.sel;
     if(it&&sid){linkSeller(it,sid);nl++;}}
   if(!sid&&!ni&&!nl)return toast('Nothing selected to save');
   save();imp=null;toast([sid?'Supplier saved':'',ni?ni+' new item(s) added':'',nl?nl+' item(s) linked to the supplier':''].filter(Boolean).join(' · '));
-  if(ni)go('items');else if(sid)go('sellerEdit',sid);else go('set');}
+  if(ni)go('items');else if(sid)go('sellerEdit',sid);else{setTab='imp';go('set');}}
 
 /* ================= EXCEL REPORTS (stock related) ================= */
 const XL_FOOT=['Vanguard Logic Development','© 2026 Vanguard Logic Development. All rights reserved. For illustration only, not to scale. No copying or distribution without written permission.'];
