@@ -689,30 +689,66 @@ const SIZES=[1,10,30,50];
 const ISSUE_CATS=['Stock Powder','Soya Sauce','Mustard Sauce'];
 /* dry goods store items: stock counted in packs (no.); pack = type, size, unit */
 const SEED=[
- ['stockpowder','RM','Stock powder (1 kg packet)','packet',1,'kg'],
- ['breader','RM','Breader (5 kg packet)','packet',5,'kg'],
- ['teriyaki','RM','Teriyaki sauce (4 L can)','can',4,'L'],
- ['tomato','RM','Tomato sauce (4 L can)','can',4,'L'],
- ['mayo','RM','Mayonnaise (900 g bottle)','bottle',900,'g'],
- ['sunflower','RM','Sunflower kernels (400 g packet)','packet',400,'g'],
- ['mustard','RM','Mustard oil (750 ml bottle)','bottle',750,'ml'],
- ['almond','RM','Almond raw (1 kg packet)','packet',1,'kg'],
- ['balsamic','RM','Balsamic vinegar (500 ml bottle)','bottle',500,'ml'],
- ['soya','RM','Soya sauce (5 L can)','can',5,'L'],
- ['pepper','RM','Black pepper seeds (1 kg packet)','packet',1,'kg'],
- ['chilli','RM','Chilli powder (1 kg packet)','packet',1,'kg'],
- ['cumin','RM','Cumin seeds (1 kg packet)','packet',1,'kg'],
- ['turmeric','RM','Turmeric powder (1 kg packet)','packet',1,'kg'],
- ['cinnamon','RM','Cinnamon sticks (500 g packet)','packet',500,'g'],
- ['coconutmilk','RM','Coconut milk powder (1 kg packet)','packet',1,'kg'],
+ ['mangojam','RM','Mango jam (450 g bottle)','bottle',450,'g'],
+ ['strawjam','RM','Strawberry jam (450 g bottle)','bottle',450,'g'],
+ ['mixjam','RM','Mixed fruit jam (1.4 kg tub)','tub',1.4,'kg'],
+ ['marmalade','RM','Orange marmalade (15 g portion sachet)','sachet',15,'g'],
+ ['honey','RM','Bee honey (550 g bottle)','bottle',550,'g'],
+ ['peanutbutter','RM','Peanut butter crunchy (510 g jar)','jar',510,'g'],
+ ['hazelspread','RM','Hazelnut chocolate spread (300 g jar)','jar',300,'g'],
+ ['mangocordial','RM','Mango cordial (750 ml bottle)','bottle',750,'ml'],
+ ['passioncordial','RM','Passion fruit cordial (750 ml bottle)','bottle',750,'ml'],
+ ['orangesquash','RM','Orange squash concentrate (850 ml bottle)','bottle',850,'ml'],
+ ['water500','RM','Drinking water (500 ml bottle)','bottle',500,'ml'],
+ ['soda','RM','Soda water (330 ml can)','can',330,'ml'],
+ ['tonic','RM','Tonic water (330 ml can)','can',330,'ml'],
+ ['tomjuice','RM','Tomato juice (1.36 L tin)','tin',1.36,'L'],
+ ['ketchupsachet','RM','Tomato ketchup (15 g sachet)','sachet',15,'g'],
+ ['tomsauce5','RM','Tomato sauce (5 kg can)','can',5,'kg'],
+ ['chillisauce','RM','Chilli sauce (400 g squeeze bottle)','bottle',400,'g'],
+ ['lightsoya','RM','Light soya sauce (5 L can)','can',5,'L'],
+ ['oyster','RM','Oyster sauce (350 ml bottle)','bottle',350,'ml'],
+ ['mayo','RM','Real mayonnaise (350 g squeeze bottle)','bottle',350,'g'],
+ ['mayotub','RM','Mayonnaise catering pack (3 L tub)','tub',3,'L'],
+ ['sweetchilli','RM','Sweet chilli sauce (350 ml bottle)','bottle',350,'ml'],
+ ['chickseason','RM','Chicken seasoning powder (1 kg bottle)','bottle',1,'kg'],
+ ['stockpowder','RM','Chicken stock powder (500 g tub)','tub',500,'g'],
+ ['salt','RM','Table salt (1 kg packet)','packet',1,'kg'],
+ ['stockcubes','RM','Chicken stock cubes (10 x 10 g box)','box',100,'g'],
+ ['mustard','RM','Mustard cream (350 g bottle)','bottle',350,'g'],
+ ['limepickle','RM','Lime pickle (380 g bottle)','bottle',380,'g'],
+ ['mangochutney','RM','Mango chutney (450 g bottle)','bottle',450,'g'],
+ ['cornflour','RM','Corn flour (1 kg packet)','packet',1,'kg'],
+ ['icingsugar','RM','Icing sugar (2.5 kg packet)','packet',2.5,'kg'],
+ ['custard','RM','Custard powder (500 g packet)','packet',500,'g'],
+ ['yeast','RM','Instant dry yeast (500 g packet)','packet',500,'g'],
+ ['cocoa','RM','Cocoa powder (1 kg packet)','packet',1,'kg'],
+ ['raisins','RM','Raisins (1 kg packet)','packet',1,'kg'],
+ ['oliveoil','RM','Olive oil extra virgin (1 L bottle)','bottle',1,'L'],
+ ['sesameoil','RM','Sesame oil (640 ml bottle)','bottle',640,'ml'],
+ ['vegoil','RM','Vegetable oil (20 L can)','can',20,'L'],
+ ['coconutvinegar','RM','Coconut vinegar (750 ml bottle)','bottle',750,'ml'],
+ ['ghee','RM','Ghee (800 g tin)','tin',800,'g'],
+ ['bakedbeans','RM','Baked beans in tomato sauce (420 g can)','can',420,'g'],
+ ['mushroom','RM','Button mushrooms (425 g can)','can',425,'g'],
+ ['sweetcorn','RM','Sweet corn kernels (425 g can)','can',425,'g'],
+ ['fruitcocktail','RM','Fruit cocktail (820 g tin)','tin',820,'g'],
+ ['pineapple','RM','Pineapple slices (565 g tin)','tin',565,'g'],
+ ['cannedfish','RM','Canned fish (425 g can)','can',425,'g'],
+ ['peeledtomato','RM','Whole peeled tomatoes (2.55 kg can)','can',2.55,'kg'],
+ ['tompaste','RM','Tomato paste (3 kg can)','can',3,'kg'],
+ ['olives','RM','Black pitted olives (340 g jar)','jar',340,'g'],
  ['basmati','RM','Basmati rice (5 kg bag)','bag',5,'kg'],
- ['flour','RM','Wheat flour (25 kg bag)','bag',25,'kg'],
- ['sugar','RM','White sugar (50 kg bag)','bag',50,'kg'],
- ['lentils','RM','Red lentils (1 kg packet)','packet',1,'kg'],
- ['cashew','RM','Cashew nuts (1 kg packet)','packet',1,'kg'],
- ['oyster','RM','Oyster sauce (2.2 L bottle)','bottle',2.2,'L'],
- ['chillisauce','RM','Chilli sauce (4 L can)','can',4,'L'],
- ['vegoil','RM','Vegetable oil (5 L can)','can',5,'L']];
+ ['spaghetti','RM','Spaghetti (500 g packet)','packet',500,'g'],
+ ['penne','RM','Penne rigate (500 g packet)','packet',500,'g'],
+ ['oregano','RM','Oregano (50 g packet)','packet',50,'g'],
+ ['evapmilk','RM','Evaporated milk (405 g tin)','tin',405,'g'],
+ ['cream','RM','Whipping cream (1 L carton)','carton',1,'L'],
+ ['butter','RM','Salted butter (250 g packet)','packet',250,'g'],
+ ['foil','PK','Aluminium foil (45 cm x 300 m box)','box',0,'g'],
+ ['clingwrap','PK','Cling wrap (45 cm x 300 m box)','box',0,'g'],
+ ['gloves','OT','Disposable gloves (100 pcs box)','box',0,'g'],
+ ['washpowder','OT','Washing powder (3 kg box)','box',3,'kg']];
 /* in-house production products are added in Hand out (+ Add product); more categories with + Add category */
 const RECIPES=[];
 
@@ -1213,7 +1249,7 @@ function parseCode(c){const up=c.toUpperCase(),l=S.lots.find(x=>x.lot.toUpperCas
 function openCode(c){c=String(c||'').trim();if(!c)return;const r=parseCode(c);if(r.lot)go('lot',r.lot.id);else if(r.item)go('item',r.item.id);else toast('Not found: '+c);}
 function vScan(){return `<h2>Scan</h2><div class="card form2"><p class="note" style="margin-top:0">Scan a lot label to see its stock, expiry and history, or to hand out from it. Scan an item label to see all its lots.</p>
   <button class="pri big" onclick="openScan()">Scan</button>
-  <label style="margin-top:16px">Or type a lot no. or SKU<div class="row"><input id="mc" onkeydown="if(event.key==='Enter')findCode(this.value)" placeholder="e.g. SP01 or SP${d5(today())}-1 or pepper"><button class="pri" onclick="findCode($('mc').value)"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style="vertical-align:-3px;margin-right:6px"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>Search</button></div></label><div id="mres"></div></div>`;}
+  <label style="margin-top:16px">Or type a lot no. or SKU<div class="row"><input id="mc" onkeydown="if(event.key==='Enter')findCode(this.value)" placeholder="e.g. MJ01 or MJ${d5(today())}-1 or mango jam"><button class="pri" onclick="findCode($('mc').value)"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style="vertical-align:-3px;margin-right:6px"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>Search</button></div></label><div id="mres"></div></div>`;}
 function findCode(t){t=String(t||'').trim();const out=$('mres');if(!t){if(out)out.innerHTML='<div class="note">Type a lot no., SKU, supplier batch no. or item name.</div>';return;}
   const r=parseCode(t);if(r.lot)return go('lot',r.lot.id);if(r.item)return go('item',r.item.id);
   const u=t.toLowerCase(),its=S.items.filter(i=>i.name.toLowerCase().includes(u)||i.sku.toLowerCase().includes(u)),
@@ -1488,7 +1524,7 @@ function vHist(){const list=histList();
    <label>Supplier<select onchange="hist.sup=this.value;render()"><option value="">All suppliers</option>${sellerOpts(hist.sup)}</select></label>
    <label>Client<select onchange="hist.cli=this.value;render()"><option value="">All clients</option><option value="inhouse" ${hist.cli==='inhouse'?'selected':''}>In-house production</option>${clientOpts(hist.cli)}</select></label>
    <label>Salesperson<select onchange="hist.sales=this.value;render()"><option value="">All salespeople</option>${salesNames().map(n=>`<option value="${esc(n)}" ${hist.sales===n?'selected':''}>${esc(n)}</option>`).join('')}</select></label></div>
-   <label style="margin-bottom:0">Search any word: item, supplier, client, salesperson, product, invoice, GRN, release note, person<div class="row"><input id="hq" placeholder="e.g. pepper, soya sauce, Nimal" value="${esc(hist.q)}" onkeydown="if(event.key==='Enter'){hist.q=this.value;render()}"><button class="pri" onclick="hist.q=$('hq').value;render()">Search</button></div></label>
+   <label style="margin-bottom:0">Search any word: item, supplier, client, salesperson, product, invoice, GRN, release note, person<div class="row"><input id="hq" placeholder="e.g. mango jam, soya sauce, Nimal" value="${esc(hist.q)}" onkeydown="if(event.key==='Enter'){hist.q=this.value;render()}"><button class="pri" onclick="hist.q=$('hq').value;render()">Search</button></div></label>
    <div class="acts"><button onclick="hist={type:'',prod:'',item:'',sup:'',cli:'',sales:'',q:''};render()">Reset</button><button class="pri" ${list.length?'':'disabled'} onclick="go('histRep')">Report</button><span class="note" style="align-self:center">${list.length} movement(s) found</span></div></div>
   ${list.length?`<div class="card scroll"><table><thead>${HIST_HEAD}</thead><tbody>${histRows(list.slice(0,500),false)}</tbody></table></div>`:'<div class="card note">No movements match.</div>'}`;}
 function repHtml(){const list=histList();
@@ -1865,15 +1901,67 @@ function seedDemo(){const d=n=>{const x=new Date();x.setDate(x.getDate()+n);retu
   const D=sup('Ruhunu Enterprises','Dilini Jayasinghe','0770000404','orders@ruhunuent.example','No. 52, Galle Road, Matara');
   const it=k=>S.items.find(i=>i.key===k);
   const plan=[ // key, supplier, reorder (no.), [qty (no.), days ago received, days to expiry (negative = expired), supplier lot]...
-    ['stockpowder',D,5,[[12,40,330,'RE-2408'],[8,6,365,'RE-2421']]],['breader',D,3,[[10,25,240,'RE-1187']]],
-    ['teriyaki',B,3,[[12,30,400,'AR-7781']]],['tomato',B,3,[[10,30,300,'AR-3307']]],['mayo',B,4,[[14,50,25,'AR-0912']]],
-    ['sunflower',C,5,[[20,20,180,'UC-55']]],['mustard',C,4,[[3,45,360,'UC-19']]],['almond',C,2,[]],['balsamic',B,2,[]],
-    ['soya',B,2,[[6,20,540,'AR-4410']]],['pepper',A,4,[[16,35,500,'LS-221']]],['chilli',A,3,[[7,35,365,'LS-129']]],
-    ['cumin',A,3,[[12,28,420,'LS-305']]],['turmeric',A,3,[[9,28,12,'LS-311']]],['cinnamon',A,2,[[2,120,-6,'LS-087'],[6,15,400,'LS-342']]],
-    ['coconutmilk',C,4,[[15,22,8,'UC-71']]],['basmati',D,5,[[20,18,300,'RE-1520']]],['flour',D,2,[[8,10,150,'RE-1611']]],
-    ['sugar',D,1,[[4,12,700,'RE-1640']]],['lentils',C,6,[[25,16,280,'UC-88']]],['cashew',C,3,[[2,150,-15,'UC-12'],[3,9,240,'UC-94']]],
-    ['oyster',B,3,[[10,26,365,'AR-5120']]],['chillisauce',B,3,[[8,26,330,'AR-5127']]],['vegoil',B,4,[[12,14,270,'AR-6001']]]];
-  plan.forEach(([k,sid,ro])=>{const i=it(k);i.reorder=ro;linkSeller(i,sid);});linkSeller(it('stockpowder'),A);linkSeller(it('almond'),A);
+    ['mangojam',C,4,[[16, 44, 307, "UC-4451"], [5, 91, 179, "UC-5548"]]],
+    ['strawjam',C,2,[[4, 50, 339, "UC-2623"]]],
+    ['mixjam',C,3,[[6, 34, 320, "UC-2240"]]],
+    ['marmalade',C,200,[[960, 17, 674, "UC-9872"]]],
+    ['honey',C,6,[[12, 46, 260, "UC-5045"], [4, 97, 116, "UC-4925"]]],
+    ['peanutbutter',C,3,[[12, 12, 377, "UC-2200"]]],
+    ['hazelspread',C,4,[[12, 54, 350, "UC-9587"]]],
+    ['mangocordial',C,2,[[8, 59, 655, "UC-6112"]]],
+    ['passioncordial',C,6,[[12, 10, 175, "UC-9244"]]],
+    ['orangesquash',C,2,[[6, 32, 472, "UC-9293"]]],
+    ['water500',D,5,[[15, 29, 492, "RE-7643"]]],
+    ['soda',C,10,[[9, 57, 316, "UC-498"]]],
+    ['tonic',C,6,[[24, 41, 286, "UC-1926"]]],
+    ['tomjuice',C,3,[[15, 43, 240, "UC-9087"]]],
+    ['ketchupsachet',B,200,[[150, 50, 128, "AR-7088"]]],
+    ['tomsauce5',B,4,[[8, 45, 361, "AR-1218"], [2, 103, 167, "AR-8173"]]],
+    ['chillisauce',B,3,[[9, 44, 152, "AR-8157"]]],
+    ['lightsoya',B,10,[[30, 8, 487, "AR-4413"]]],
+    ['oyster',B,4,[[8, 23, 446, "AR-5682"], [2, 96, 198, "AR-2843"]]],
+    ['mayo',B,6,[[5, 42, 257, "AR-1046"]]],
+    ['mayotub',B,3,[[15, 39, 359, "AR-8731"]]],
+    ['sweetchilli',B,3,[[6, 15, 299, "AR-4167"], [2, 95, 176, "AR-1786"]]],
+    ['chickseason',A,3,[[9, 34, 344, "LS-9428"]]],
+    ['stockpowder',A,5,[[25, 43, 465, "LS-391"]]],
+    ['salt',D,6,[[24, 31, 608, "RE-7021"]]],
+    ['stockcubes',A,5,[[15, 45, 201, "LS-6619"]]],
+    ['mustard',A,5,[[15, 52, 459, "LS-7293"]]],
+    ['limepickle',A,2,[[4, 46, 686, "LS-3976"]]],
+    ['mangochutney',A,3,[[15, 10, 304, "LS-9768"]]],
+    ['cornflour',A,2,[[1, 30, 187, "LS-3633"]]],
+    ['icingsugar',C,3,[[15, 24, 265, "UC-9764"]]],
+    ['custard',C,3,[[6, 42, 592, "UC-6871"]]],
+    ['yeast',C,3,[[3, 150, -8, "UC-162"], [9, 10, 300, "UC-4403"]]],
+    ['cocoa',C,6,[[12, 44, 194, "UC-2636"]]],
+    ['raisins',C,3,[[9, 53, 676, "UC-2914"]]],
+    ['oliveoil',B,6,[[12, 12, 652, "AR-8873"]]],
+    ['sesameoil',B,4,[[12, 59, 285, "AR-6993"]]],
+    ['vegoil',B,4,[[8, 57, 331, "AR-5198"]]],
+    ['coconutvinegar',B,6,[[18, 38, 397, "AR-6383"], [6, 71, 127, "AR-3052"]]],
+    ['ghee',C,2,[[10, 42, 654, "UC-7548"]]],
+    ['bakedbeans',B,6,[[24, 22, 696, "AR-1114"], [8, 88, 159, "AR-161"]]],
+    ['mushroom',B,10,[[50, 54, 470, "AR-693"]]],
+    ['sweetcorn',B,6,[[12, 54, 666, "AR-7272"]]],
+    ['fruitcocktail',C,6,[[18, 32, 361, "UC-8565"], [6, 67, 131, "UC-5795"]]],
+    ['pineapple',C,2,[[4, 21, 484, "UC-5239"]]],
+    ['cannedfish',B,10,[[30, 44, 451, "AR-1879"]]],
+    ['peeledtomato',B,10,[[50, 59, 258, "AR-3201"], [16, 115, 177, "AR-1682"]]],
+    ['tompaste',B,4,[[20, 21, 316, "AR-3282"]]],
+    ['olives',B,4,[]],
+    ['basmati',D,2,[[1, 56, 180, "RE-900"]]],
+    ['spaghetti',D,3,[[15, 24, 685, "RE-1401"]]],
+    ['penne',D,4,[[16, 8, 225, "RE-8898"]]],
+    ['oregano',A,5,[[25, 49, 492, "LS-206"]]],
+    ['evapmilk',C,2,[[6, 36, 15, "UC-5379"]]],
+    ['cream',C,2,[[12, 25, 7, "UC-1584"]]],
+    ['butter',C,6,[[9, 22, 15, "UC-5366"]]],
+    ['foil',D,6,[[30, 50, 664, "RE-8015"], [10, 83, 292, "RE-8679"]]],
+    ['clingwrap',D,3,[[6, 42, 295, "RE-7019"]]],
+    ['gloves',D,2,[]],
+    ['washpowder',D,2,[[6, 40, 167, "RE-4592"], [2, 77, 184, "RE-6934"]]]];
+  plan.forEach(([k,sid,ro])=>{const i=it(k);i.reorder=ro;linkSeller(i,sid);});linkSeller(it('stockpowder'),D);linkSeller(it('salt'),A);linkSeller(it('cocoa'),A);
   const recs=[];plan.forEach(([k,sid,ro,ls])=>ls.forEach(([q,ago,exp,sl])=>recs.push({k,sid,q,ago,exp,sl})));
   recs.sort((a,b)=>b.ago-a.ago);const grnOf={};
   recs.forEach(r=>{const i=it(r.k),rd=d(-r.ago),key=r.sid+rd;if(!grnOf[key])grnOf[key]={grn:newGrnNo(rd),inv:'INV-'+(1000+Object.keys(grnOf).length*7)};const g=grnOf[key];
