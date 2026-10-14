@@ -1504,7 +1504,7 @@ function histText(max){const list=histList();let t=`STOCK MOVEMENT REPORT\n${S.s
   if(list.length>max)t+=`\n…and ${list.length-max} more movement(s). See the printed report for the full list.`;return t.trim();}
 function shareHist(){sendBox('Send stock movement report','Stock movement report',histText(60),'','',defHist);}
 /* ================= SETTINGS ================= */
-function vSet(){const A=AUTH.isAdmin();return `${AUTH.accountPanel()}${AUTH.usersPanel()}<h2>Saved documents</h2><div class="note" style="margin-bottom:8px">Every file sent or saved, and a daily data backup, is kept here inside the app on this device.</div><div id="docsBox" class="card note">Loading…</div>${AUTH.isDev()?devPanel():''}
+function vSet(){const A=AUTH.isAdmin();return `${AUTH.accountPanel()}${AUTH.usersPanel()}<h2>Saved documents</h2><div class="note" style="margin-bottom:8px">Every file sent or saved, and a daily data backup, is kept here inside the app on this device.</div><div id="docsBox" class="card note">Loading…</div>${AUTH.isDev()?devPanel():AUTH.isAdmin()?'<h2>Cloud</h2>'+cloudCard():''}
   ${A?`<h2>Business settings</h2><div class="card form2">
   <label>Business name (used in requests and reports)<input id="tB" value="${esc(S.set.biz)}"></label>
   <div class="two"><label>Purchasing WhatsApp number (stock requests)<input id="tBP" type="tel" value="${esc(S.set.boPhone)}" placeholder="e.g. 0771234567"></label><label>Purchasing email (stock requests)<input id="tBE" type="email" value="${esc(S.set.boEmail)}"></label></div>
@@ -1904,14 +1904,24 @@ async function cloudInit(){if(!cloudWanted())return;CLOUD.status='Connecting…'
 function cloudRefresh(){if(view==='set'&&$('cloudBox'))$('cloudBox').outerHTML=cloudCard();}
 function cloudCard(){const u=CLOUD.user;
   return `<div class="card form2" id="cloudBox"><h3>Cloud (Firebase)</h3>
-   <div class="kv"><span>Status</span><b>${esc(u?(CLOUD.err?'Error: '+CLOUD.err:CLOUD.status):CLOUD.status)}</b>${u?`<span>Warehouse login</span><b>${esc(u.email||'')}</b><span>Last sync</span><b>${CLOUD.synced?fdt(CLOUD.synced):'—'}</b>`:''}</div>
+   <div class="kv"><span>Status</span><b>${esc(u?(CLOUD.err?'Error: '+CLOUD.err:CLOUD.status):CLOUD.status)}</b>${u?`<span>Cloud login</span><b>${esc(u.email||'')}</b><span>Last sync</span><b>${CLOUD.synced?fdt(CLOUD.synced):'—'}</b>`:''}</div>
    ${u?`<div class="acts"><button class="pri" onclick="cloudPush(true)">Sync</button><button class="bad" onclick="cloudDisconnect()">Disconnect</button></div>
-    <div class="note">Every change on this phone is sent to the cloud and every change from other phones arrives here automatically. Without internet the phone keeps working and syncs later.</div>`
-   :`${cloudWeb()?'':'<div class="note" style="margin-bottom:8px;color:var(--warn)">This OptiStox file is opened from phone storage. The cloud works only when OptiStox is opened from its web address: https://migiecmb-byte.github.io/optistox/</div>'}<div class="note" style="margin-bottom:8px">Connect this phone with the warehouse login created in Firebase (Authentication → Users). Do this once on each phone.</div>
-    <div class="two"><label>Warehouse email<input id="cE" type="text" inputmode="email" name="cloud-login" autocomplete="off" autocapitalize="none" spellcheck="false" data-lpignore="true"></label><label>Password<input id="cP" type="text" class="mask" name="cloud-key" autocomplete="off" autocapitalize="none" spellcheck="false" data-lpignore="true"></label></div>
+    <div class="note">Every change on this phone is sent to the cloud and every change from other phones arrives here automatically. Without internet the phone keeps working and syncs later.</div>
+    <h3 style="margin-top:14px">Change cloud password</h3>
+    <div class="two"><label>Current password<input id="cpO" type="text" class="mask" autocomplete="off" autocapitalize="none" spellcheck="false" data-lpignore="true"></label><label>New password<input id="cpN" type="text" class="mask" autocomplete="off" autocapitalize="none" spellcheck="false" data-lpignore="true" placeholder="at least 6 characters"></label></div>
+    <label>Repeat new password<input id="cpN2" type="text" class="mask" autocomplete="off" autocapitalize="none" spellcheck="false" data-lpignore="true"></label>
+    <div class="acts"><button class="pri" onclick="cloudPw()">Change</button></div>
+    <div class="note">After the change, every other phone must connect again with the new password.</div>`
+   :`${cloudWeb()?'':'<div class="note" style="margin-bottom:8px;color:var(--warn)">This OptiStox file is opened from phone storage. The cloud works only when OptiStox is opened from its web address: https://migiecmb-byte.github.io/optistox/</div>'}<div class="note" style="margin-bottom:8px">Connect this phone with the cloud login (email and password) you were given. Do this once on each phone.</div>
+    <div class="two"><label>Cloud login email<input id="cE" type="text" inputmode="email" name="cloud-login" autocomplete="off" autocapitalize="none" spellcheck="false" data-lpignore="true"></label><label>Password<input id="cP" type="text" class="mask" name="cloud-key" autocomplete="off" autocapitalize="none" spellcheck="false" data-lpignore="true"></label></div>
     <div class="acts"><button class="pri" onclick="cloudConnect()">Connect</button></div>`}</div>`;}
+async function cloudPw(){if(!AUTH.isAdmin()||!CLOUD.user)return;const o=$('cpO').value,n=$('cpN').value,n2=$('cpN2').value;
+  if(!o)return toast('Enter the current cloud password');if(n.length<6)return toast('New password: at least 6 characters');if(n!==n2)return toast('The two new passwords do not match');
+  try{const cred=firebase.auth.EmailAuthProvider.credential(CLOUD.user.email,o);await CLOUD.user.reauthenticateWithCredential(cred);await CLOUD.user.updatePassword(n);
+    ['cpO','cpN','cpN2'].forEach(i=>$(i).value='');toast('Cloud password changed. Connect the other phones again with the new password.');}
+  catch(e){const c=((e&&e.code)||'').replace('auth/','');toast(/wrong-password|invalid-credential|invalid-login/.test(c)?'The current cloud password is wrong':c==='too-many-requests'?'Too many tries. Wait a few minutes and try again':'Could not change the password: '+(c.replace(/-/g,' ')||(e&&e.message)||'error'));}}
 function cloudWeb(){return /^https?:$/.test(location.protocol);}
-async function cloudConnect(){if(!AUTH.isDev())return;
+async function cloudConnect(){if(!AUTH.isAdmin())return;
   if(!cloudWeb()){CLOUD.status='Cannot connect: this OptiStox file was opened from phone storage ('+location.protocol+'). Open OptiStox from its web address https://migiecmb-byte.github.io/optistox/, then connect.';cloudRefresh();return toast('Open OptiStox from https://migiecmb-byte.github.io/optistox/ to connect');}
   const em=$('cE').value.trim(),pw=$('cP').value;CLOUD.status='Connecting…';cloudRefresh();
   try{await Promise.race([cloudConnect0(em,pw),new Promise((_,no)=>setTimeout(()=>no(new Error('no answer from Firebase after 25 seconds — check the internet')),25000))]);}
@@ -1950,7 +1960,7 @@ async function cloudPush(manual){if(!CLOUD.user||!CLOUD.db)return manual&&toast(
   let ul='';try{ul=localStorage.getItem(UKEY)||'';}catch(e){}if(ul&&ul!==CLOUD.last.users){ops.push(['set',base.collection('meta').doc('users'),{list:ul,t:Date.now()}]);CLOUD.last.users=ul;}
   try{for(let i=0;i<ops.length;i+=400){const b=CLOUD.db.batch();ops.slice(i,i+400).forEach(o=>o[0]==='set'?b.set(o[1],o[2]):b.delete(o[1]));await b.commit();}CLOUD.synced=Date.now();CLOUD.err='';if(manual)toast(ops.length?ops.length+' change(s) synced':'Everything is already synced');}
   catch(e){CLOUD.err=(e&&(e.code||e.message))||'sync error';if(manual)toast('Sync error: '+CLOUD.err);}cloudRefresh();}
-async function cloudDisconnect(){if(!AUTH.isDev())return;if(!(await ask('Disconnect this phone from the cloud? The data stays on this phone and in the cloud.')))return;cloudSetWanted(false);cloudStop();try{await CLOUD.app.auth().signOut();}catch(e){}CLOUD.user=null;CLOUD.last={};CLOUD.status='Not connected';render();}
+async function cloudDisconnect(){if(!AUTH.isAdmin())return;if(!(await ask('Disconnect this phone from the cloud? The data stays on this phone and in the cloud.')))return;cloudSetWanted(false);cloudStop();try{await CLOUD.app.auth().signOut();}catch(e){}CLOUD.user=null;CLOUD.last={};CLOUD.status='Not connected';render();}
 function cloudFile(name,blob,kind){try{if(!CLOUD.user||!CLOUD.st)return;CLOUD.st.ref(`warehouses/${CLOUD.user.uid}/${kind==='backup'?'backups':'documents'}/${today()}/${Date.now()}-${name}`).put(blob,{contentType:blob.type||'application/octet-stream'}).catch(()=>{});}catch(e){}}
 
 /* ---------- list picker: replaces the drop-down list of every select with a panel that has ← back and ✕ close ---------- */
