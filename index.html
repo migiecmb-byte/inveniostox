@@ -45,6 +45,7 @@ label.inl{display:flex;align-items:center;gap:8px;margin:0 0 8px}
 label.inl input{width:22px;min-height:0;margin:0;accent-color:var(--gold)}
 .form2{max-width:640px}
 .row{display:flex;align-items:center;gap:10px}
+input.mask{-webkit-text-security:disc;text-security:disc}
 .ucard{display:grid;gap:6px}.ucard .uhd{display:flex;justify-content:space-between;align-items:center;gap:8px}.ucard .acts{margin:4px 0 0;flex-wrap:wrap}.ucard .acts button{min-width:0;flex:1}
 #mbody{position:relative}#mbody .mx{position:absolute;top:0;right:0;min-width:0;width:40px;min-height:40px;padding:0;font-size:18px;line-height:1}#mbody h3{padding-right:40px}
 input.need,select.need{border-color:var(--warn)!important;background:#3d3208!important}
@@ -584,17 +585,16 @@ var AUTH=(function(){
       '<button class="big" type="button" id="gAdm">Admin<span class="gsub">Client administrator</span></button>'+
       (cfg.client?'':'<button class="big" type="button" id="gDev">Developer<span class="gsub">Full access</span></button>')+'</div></div>'+foot();
       g('gUsr').onclick=function(){mode='user';loginScreen();};g('gAdm').onclick=function(){mode='admin';loginScreen();};if(g('gDev'))g('gDev').onclick=function(){mode='dev';loginScreen();};devTap();return;}
-    gt.innerHTML='<div class="gbox">'+brand()+'<div class="gform" id="gf">'+
+    gt.innerHTML='<div class="gbox">'+brand()+'<form class="gform" id="gf" method="post" action="#" autocomplete="on" novalidate>'+
       (first?(cfg.client?'<h3>Create the Admin account</h3><div class="note">This is the first start. Set the username and password of the client administrator. Keep them safe.</div>':'<h3>Create the developer account</h3><div class="note">This is the first start. Set the username and password of the developer. Keep them safe.</div>')+
         '<label>Full name<input id="gn" required></label>':'<h3>'+SCR[LV[mode]]+' sign in</h3>')+
-      (cfg.client&&mode==='dev'&&!first?'':'<label>Username<input id="gu" autocapitalize="none" autocomplete="username" required></label>')+
-      '<label>Password<input id="gp" type="password" autocomplete="'+(first?'new-password':'current-password')+'" required></label>'+
+      (cfg.client&&mode==='dev'&&!first?'':'<label>Username<input id="gu" name="username" autocapitalize="none" autocomplete="username" required></label>')+
+      '<label>Password<input id="gp" name="password" type="password" autocomplete="'+(first?'new-password':'current-password')+'" required></label>'+
       (first?'<label>Repeat password<input id="gp2" type="password" autocomplete="new-password" required></label>':'')+
-      (openOn()&&!first?'<div class="note">Open access: leave username and password empty and tap Sign in.</div>':'')+'<div id="gmsg" class="gmsg"></div><button class="pri big" type="button" id="gbtn">'+(first?'+ Account':'Sign in')+'</button>'+
-      (first?'':'<button class="gback" type="button" id="gBack">← Back</button>')+'</div></div>'+foot();if(first)devTap();
+      (openOn()&&!first?'<div class="note">Open access: leave username and password empty and tap Sign in.</div>':'')+'<div id="gmsg" class="gmsg"></div><button class="pri big" type="submit" id="gbtn">'+(first?'+ Account':'Sign in')+'</button>'+
+      (first?'':'<button class="gback" type="button" id="gBack">← Back</button>')+'</form></div>'+foot();if(first)devTap();
     if(!first)g('gBack').onclick=function(){mode=null;loginScreen();};
-    var run=function(){first?setup():signIn();};g('gbtn').onclick=run;
-    Array.prototype.forEach.call(g('gf').querySelectorAll('input'),function(i){i.onkeydown=function(ev){if(ev.key==='Enter'){ev.preventDefault();run();}};});
+    var run=function(){first?setup():signIn();};g('gf').onsubmit=function(ev){ev.preventDefault();run();};
     setTimeout(function(){var f=g(first?'gn':'gu')||g('gp');if(f&&f.focus)f.focus();},50);}
   var taps=0,tapT=0;function devTap(){var v=g('gver');if(!cfg.client||!v)return;v.onclick=function(ev){ev.stopPropagation();clearTimeout(tapT);tapT=setTimeout(function(){taps=0;},1500);if(++taps>=5){taps=0;mode='dev';loginScreen();}};}
   function setup(){var n=g('gn').value.trim(),u=g('gu').value.trim().toLowerCase(),p=g('gp').value,p2=g('gp2').value;
@@ -1908,7 +1908,7 @@ function cloudCard(){const u=CLOUD.user;
    ${u?`<div class="acts"><button class="pri" onclick="cloudPush(true)">Sync</button><button class="bad" onclick="cloudDisconnect()">Disconnect</button></div>
     <div class="note">Every change on this phone is sent to the cloud and every change from other phones arrives here automatically. Without internet the phone keeps working and syncs later.</div>`
    :`${cloudWeb()?'':'<div class="note" style="margin-bottom:8px;color:var(--warn)">This OptiStox file is opened from phone storage. The cloud works only when OptiStox is opened from its web address: https://migiecmb-byte.github.io/optistox/</div>'}<div class="note" style="margin-bottom:8px">Connect this phone with the warehouse login created in Firebase (Authentication → Users). Do this once on each phone.</div>
-    <div class="two"><label>Warehouse email<input id="cE" type="email" autocomplete="off" placeholder="warehouse1@inveniostox.app"></label><label>Password<input id="cP" type="password" autocomplete="off"></label></div>
+    <div class="two"><label>Warehouse email<input id="cE" type="text" inputmode="email" name="cloud-login" autocomplete="off" autocapitalize="none" spellcheck="false" data-lpignore="true"></label><label>Password<input id="cP" type="text" class="mask" name="cloud-key" autocomplete="off" autocapitalize="none" spellcheck="false" data-lpignore="true"></label></div>
     <div class="acts"><button class="pri" onclick="cloudConnect()">Connect</button></div>`}</div>`;}
 function cloudWeb(){return /^https?:$/.test(location.protocol);}
 async function cloudConnect(){if(!AUTH.isDev())return;
