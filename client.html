@@ -45,6 +45,7 @@ label.inl{display:flex;align-items:center;gap:8px;margin:0 0 8px}
 label.inl input{width:22px;min-height:0;margin:0;accent-color:var(--gold)}
 .form2{max-width:640px}
 .row{display:flex;align-items:center;gap:10px}
+.frow{margin:0 0 12px;flex-wrap:wrap}.frow select{flex:1 1 160px;min-width:0}
 input.mask{-webkit-text-security:disc;text-security:disc}
 .ucard{display:grid;gap:6px}.ucard .uhd{display:flex;justify-content:space-between;align-items:center;gap:8px}.ucard .acts{margin:4px 0 0;flex-wrap:wrap}.ucard .acts button{min-width:0;flex:1}
 #mbody{position:relative}#mbody .mx{position:absolute;top:0;right:0;min-width:0;width:40px;min-height:40px;padding:0;font-size:18px;line-height:1}#mbody h3{padding-right:40px}
@@ -684,73 +685,96 @@ var AUTH=(function(){
 <script>
 /* ================= constants ================= */
 const KEY='vld_is_wh_demo';
-const CATS={RM:'Raw material',PK:'Packaging',OT:'Other'};
+const CATS={DA:'Dairy',DG:'Dry groceries',FV:'Fruits & vegetables',MS:'Meat & seafood',PA:'Pastry & baking',SP:'Speciality foods',NF:'Non-food'};
+const SUBS={DA:['Butter & cheese','Milk & cream','Ice cream','Yoghurt','Fruit puree'],
+ DG:['Drinks','Breakfast cereals','Coffee & tea','Sweets & chocolate','Oils & ghee','Herbs & spices','Honey, jams & spreads','Rice & noodles','Pasta','Sauces & seasonings','Vinegar','Snacks','Salt & sugar'],
+ FV:['Canned fruit','Canned vegetables','Nuts & dried fruit','Frozen fries','Frozen fruit & vegetables'],
+ MS:['Canned fish & meat','Beef','Lamb & mutton','Chicken & duck','Seafood'],
+ PA:['Flour & mixes','Baking items','Chocolate & toppings','Pastry sheets'],
+ SP:['Japanese','Thai','Mexican & Mediterranean'],
+ NF:['Packing & paper','Cleaning & laundry','Gloves & safety']};
+const OLDCAT={RM:'DG',PK:'NF',OT:'NF'};
+function catLabel(it){return it?(CATS[it.cat]||'')+(it.sub?' · '+it.sub:''):'';}
+let fCat='',fSub='';
+function catSel(fn){return `<div class="row frow"><select id="fCat" onchange="fCat=this.value;fSub='';${fn}"><option value="">All categories</option>${Object.entries(CATS).map(([k,v])=>`<option value="${k}" ${k===fCat?'selected':''}>${v}</option>`).join('')}</select><select id="fSub" onchange="fSub=this.value;${fn}" ${fCat?'':'disabled'}><option value="">All sub categories</option>${(SUBS[fCat]||[]).map(x=>`<option ${x===fSub?'selected':''}>${esc(x)}</option>`).join('')}</select></div>`;}
+function catOk(it){return (!fCat||it.cat===fCat)&&(!fSub||it.sub===fSub);}
 const TYPE={IN:'Received',PROD:'Production',OUT:'Handed out',REL:'Client',IHP:'In-house production',ADJ:'Stock count'};
 const UF={g:['m',1],kg:['m',1000],ml:['v',1],L:['v',1000],pcs:['c',1]};
 const SIZES=[1,10,30,50];
 const ISSUE_CATS=['Stock Powder','Soya Sauce','Mustard Sauce'];
 /* dry goods store items: stock counted in packs (no.); pack = type, size, unit */
 const SEED=[
- ['mangojam','RM','Mango jam (450 g bottle)','bottle',450,'g'],
- ['strawjam','RM','Strawberry jam (450 g bottle)','bottle',450,'g'],
- ['mixjam','RM','Mixed fruit jam (1.4 kg tub)','tub',1.4,'kg'],
- ['marmalade','RM','Orange marmalade (15 g portion sachet)','sachet',15,'g'],
- ['honey','RM','Bee honey (550 g bottle)','bottle',550,'g'],
- ['peanutbutter','RM','Peanut butter crunchy (510 g jar)','jar',510,'g'],
- ['hazelspread','RM','Hazelnut chocolate spread (300 g jar)','jar',300,'g'],
- ['mangocordial','RM','Mango cordial (750 ml bottle)','bottle',750,'ml'],
- ['passioncordial','RM','Passion fruit cordial (750 ml bottle)','bottle',750,'ml'],
- ['orangesquash','RM','Orange squash concentrate (850 ml bottle)','bottle',850,'ml'],
- ['water500','RM','Drinking water (500 ml bottle)','bottle',500,'ml'],
- ['soda','RM','Soda water (330 ml can)','can',330,'ml'],
- ['tonic','RM','Tonic water (330 ml can)','can',330,'ml'],
- ['tomjuice','RM','Tomato juice (1.36 L tin)','tin',1.36,'L'],
- ['ketchupsachet','RM','Tomato ketchup (15 g sachet)','sachet',15,'g'],
- ['tomsauce5','RM','Tomato sauce (5 kg can)','can',5,'kg'],
- ['chillisauce','RM','Chilli sauce (400 g squeeze bottle)','bottle',400,'g'],
- ['lightsoya','RM','Light soya sauce (5 L can)','can',5,'L'],
- ['oyster','RM','Oyster sauce (350 ml bottle)','bottle',350,'ml'],
- ['mayo','RM','Real mayonnaise (350 g squeeze bottle)','bottle',350,'g'],
- ['mayotub','RM','Mayonnaise catering pack (3 L tub)','tub',3,'L'],
- ['sweetchilli','RM','Sweet chilli sauce (350 ml bottle)','bottle',350,'ml'],
- ['chickseason','RM','Chicken seasoning powder (1 kg bottle)','bottle',1,'kg'],
- ['stockpowder','RM','Chicken stock powder (500 g tub)','tub',500,'g'],
- ['salt','RM','Table salt (1 kg packet)','packet',1,'kg'],
- ['stockcubes','RM','Chicken stock cubes (10 x 10 g box)','box',100,'g'],
- ['mustard','RM','Mustard cream (350 g bottle)','bottle',350,'g'],
- ['limepickle','RM','Lime pickle (380 g bottle)','bottle',380,'g'],
- ['mangochutney','RM','Mango chutney (450 g bottle)','bottle',450,'g'],
- ['cornflour','RM','Corn flour (1 kg packet)','packet',1,'kg'],
- ['icingsugar','RM','Icing sugar (2.5 kg packet)','packet',2.5,'kg'],
- ['custard','RM','Custard powder (500 g packet)','packet',500,'g'],
- ['yeast','RM','Instant dry yeast (500 g packet)','packet',500,'g'],
- ['cocoa','RM','Cocoa powder (1 kg packet)','packet',1,'kg'],
- ['raisins','RM','Raisins (1 kg packet)','packet',1,'kg'],
- ['oliveoil','RM','Olive oil extra virgin (1 L bottle)','bottle',1,'L'],
- ['sesameoil','RM','Sesame oil (640 ml bottle)','bottle',640,'ml'],
- ['vegoil','RM','Vegetable oil (20 L can)','can',20,'L'],
- ['coconutvinegar','RM','Coconut vinegar (750 ml bottle)','bottle',750,'ml'],
- ['ghee','RM','Ghee (800 g tin)','tin',800,'g'],
- ['bakedbeans','RM','Baked beans in tomato sauce (420 g can)','can',420,'g'],
- ['mushroom','RM','Button mushrooms (425 g can)','can',425,'g'],
- ['sweetcorn','RM','Sweet corn kernels (425 g can)','can',425,'g'],
- ['fruitcocktail','RM','Fruit cocktail (820 g tin)','tin',820,'g'],
- ['pineapple','RM','Pineapple slices (565 g tin)','tin',565,'g'],
- ['cannedfish','RM','Canned fish (425 g can)','can',425,'g'],
- ['peeledtomato','RM','Whole peeled tomatoes (2.55 kg can)','can',2.55,'kg'],
- ['tompaste','RM','Tomato paste (3 kg can)','can',3,'kg'],
- ['olives','RM','Black pitted olives (340 g jar)','jar',340,'g'],
- ['basmati','RM','Basmati rice (5 kg bag)','bag',5,'kg'],
- ['spaghetti','RM','Spaghetti (500 g packet)','packet',500,'g'],
- ['penne','RM','Penne rigate (500 g packet)','packet',500,'g'],
- ['oregano','RM','Oregano (50 g packet)','packet',50,'g'],
- ['evapmilk','RM','Evaporated milk (405 g tin)','tin',405,'g'],
- ['cream','RM','Whipping cream (1 L carton)','carton',1,'L'],
- ['butter','RM','Salted butter (250 g packet)','packet',250,'g'],
- ['foil','PK','Aluminium foil (45 cm x 300 m box)','box',0,'g'],
- ['clingwrap','PK','Cling wrap (45 cm x 300 m box)','box',0,'g'],
- ['gloves','OT','Disposable gloves (100 pcs box)','box',0,'g'],
- ['washpowder','OT','Washing powder (3 kg box)','box',3,'kg']];
+ ['mangojam','DG','Mango jam (450 g bottle)','bottle',450,'g','Honey, jams & spreads'],
+ ['strawjam','DG','Strawberry jam (450 g bottle)','bottle',450,'g','Honey, jams & spreads'],
+ ['mixjam','DG','Mixed fruit jam (1.4 kg tub)','tub',1.4,'kg','Honey, jams & spreads'],
+ ['marmalade','DG','Orange marmalade (15 g portion sachet)','sachet',15,'g','Honey, jams & spreads'],
+ ['honey','DG','Bee honey (550 g bottle)','bottle',550,'g','Honey, jams & spreads'],
+ ['peanutbutter','DG','Peanut butter crunchy (510 g jar)','jar',510,'g','Honey, jams & spreads'],
+ ['hazelspread','DG','Hazelnut chocolate spread (300 g jar)','jar',300,'g','Honey, jams & spreads'],
+ ['mangocordial','DG','Mango cordial (750 ml bottle)','bottle',750,'ml','Drinks'],
+ ['passioncordial','DG','Passion fruit cordial (750 ml bottle)','bottle',750,'ml','Drinks'],
+ ['orangesquash','DG','Orange squash concentrate (850 ml bottle)','bottle',850,'ml','Drinks'],
+ ['water500','DG','Drinking water (500 ml bottle)','bottle',500,'ml','Drinks'],
+ ['soda','DG','Soda water (330 ml can)','can',330,'ml','Drinks'],
+ ['tonic','DG','Tonic water (330 ml can)','can',330,'ml','Drinks'],
+ ['tomjuice','DG','Tomato juice (1.36 L tin)','tin',1.36,'L','Drinks'],
+ ['ketchupsachet','DG','Tomato ketchup (15 g sachet)','sachet',15,'g','Sauces & seasonings'],
+ ['tomsauce5','DG','Tomato sauce (5 kg can)','can',5,'kg','Sauces & seasonings'],
+ ['chillisauce','DG','Chilli sauce (400 g squeeze bottle)','bottle',400,'g','Sauces & seasonings'],
+ ['lightsoya','DG','Light soya sauce (5 L can)','can',5,'L','Sauces & seasonings'],
+ ['oyster','DG','Oyster sauce (350 ml bottle)','bottle',350,'ml','Sauces & seasonings'],
+ ['mayo','DG','Real mayonnaise (350 g squeeze bottle)','bottle',350,'g','Sauces & seasonings'],
+ ['mayotub','DG','Mayonnaise catering pack (3 L tub)','tub',3,'L','Sauces & seasonings'],
+ ['sweetchilli','DG','Sweet chilli sauce (350 ml bottle)','bottle',350,'ml','Sauces & seasonings'],
+ ['chickseason','DG','Chicken seasoning powder (1 kg bottle)','bottle',1,'kg','Sauces & seasonings'],
+ ['stockpowder','DG','Chicken stock powder (500 g tub)','tub',500,'g','Sauces & seasonings'],
+ ['salt','DG','Table salt (1 kg packet)','packet',1,'kg','Salt & sugar'],
+ ['stockcubes','DG','Chicken stock cubes (10 x 10 g box)','box',100,'g','Sauces & seasonings'],
+ ['mustard','DG','Mustard cream (350 g bottle)','bottle',350,'g','Sauces & seasonings'],
+ ['limepickle','DG','Lime pickle (380 g bottle)','bottle',380,'g','Sauces & seasonings'],
+ ['mangochutney','DG','Mango chutney (450 g bottle)','bottle',450,'g','Sauces & seasonings'],
+ ['cornflour','PA','Corn flour (1 kg packet)','packet',1,'kg','Flour & mixes'],
+ ['icingsugar','PA','Icing sugar (2.5 kg packet)','packet',2.5,'kg','Baking items'],
+ ['custard','PA','Custard powder (500 g packet)','packet',500,'g','Baking items'],
+ ['yeast','PA','Instant dry yeast (500 g packet)','packet',500,'g','Baking items'],
+ ['cocoa','PA','Cocoa powder (1 kg packet)','packet',1,'kg','Chocolate & toppings'],
+ ['raisins','FV','Raisins (1 kg packet)','packet',1,'kg','Nuts & dried fruit'],
+ ['oliveoil','DG','Olive oil extra virgin (1 L bottle)','bottle',1,'L','Oils & ghee'],
+ ['sesameoil','DG','Sesame oil (640 ml bottle)','bottle',640,'ml','Oils & ghee'],
+ ['vegoil','DG','Vegetable oil (20 L can)','can',20,'L','Oils & ghee'],
+ ['coconutvinegar','DG','Coconut vinegar (750 ml bottle)','bottle',750,'ml','Vinegar'],
+ ['ghee','DG','Ghee (800 g tin)','tin',800,'g','Oils & ghee'],
+ ['bakedbeans','FV','Baked beans in tomato sauce (420 g can)','can',420,'g','Canned vegetables'],
+ ['mushroom','FV','Button mushrooms (425 g can)','can',425,'g','Canned vegetables'],
+ ['sweetcorn','FV','Sweet corn kernels (425 g can)','can',425,'g','Canned vegetables'],
+ ['fruitcocktail','FV','Fruit cocktail (820 g tin)','tin',820,'g','Canned fruit'],
+ ['pineapple','FV','Pineapple slices (565 g tin)','tin',565,'g','Canned fruit'],
+ ['cannedfish','MS','Canned fish (425 g can)','can',425,'g','Canned fish & meat'],
+ ['peeledtomato','FV','Whole peeled tomatoes (2.55 kg can)','can',2.55,'kg','Canned vegetables'],
+ ['tompaste','FV','Tomato paste (3 kg can)','can',3,'kg','Canned vegetables'],
+ ['olives','FV','Black pitted olives (340 g jar)','jar',340,'g','Canned vegetables'],
+ ['basmati','DG','Basmati rice (5 kg bag)','bag',5,'kg','Rice & noodles'],
+ ['spaghetti','DG','Spaghetti (500 g packet)','packet',500,'g','Pasta'],
+ ['penne','DG','Penne rigate (500 g packet)','packet',500,'g','Pasta'],
+ ['oregano','DG','Oregano (50 g packet)','packet',50,'g','Herbs & spices'],
+ ['evapmilk','DA','Evaporated milk (405 g tin)','tin',405,'g','Milk & cream'],
+ ['cream','DA','Whipping cream (1 L carton)','carton',1,'L','Milk & cream'],
+ ['butter','DA','Salted butter (250 g packet)','packet',250,'g','Butter & cheese'],
+ ['foil','NF','Aluminium foil (45 cm x 300 m box)','box',0,'g','Packing & paper'],
+ ['clingwrap','NF','Cling wrap (45 cm x 300 m box)','box',0,'g','Packing & paper'],
+ ['gloves','NF','Disposable gloves (100 pcs box)','box',0,'g','Gloves & safety'],
+ ['washpowder','NF','Washing powder (3 kg box)','box',3,'kg','Cleaning & laundry'],
+ ['cheeseslice','DA','Cheddar cheese slices (1 kg packet)','packet',1,'kg','Butter & cheese'],
+ ['mozzarella','DA','Mozzarella cheese shredded (2 kg packet)','packet',2,'kg','Butter & cheese'],
+ ['vanillaice','DA','Vanilla ice cream (5 L tub)','tub',5,'L','Ice cream'],
+ ['mangopuree','DA','Mango puree (1 kg packet)','packet',1,'kg','Fruit puree'],
+ ['yoghurt','DA','Strawberry yoghurt (100 g tub)','tub',100,'g','Yoghurt'],
+ ['coffeebeans','DG','Arabica coffee beans (1 kg packet)','packet',1,'kg','Coffee & tea'],
+ ['cornflakes','DG','Corn flakes (510 g box)','box',510,'g','Breakfast cereals'],
+ ['darkchoc','PA','Dark cooking chocolate (2.5 kg packet)','packet',2.5,'kg','Chocolate & toppings'],
+ ['fries','FV','French fries (2.5 kg packet)','packet',2.5,'kg','Frozen fries'],
+ ['greencurry','SP','Green curry paste (1 kg tub)','tub',1,'kg','Thai'],
+ ['tuna','MS','Tuna chunks (185 g can)','can',185,'g','Canned fish & meat']];
 /* in-house production products are added in Hand out (+ Add product); more categories with + Add category */
 const RECIPES=[];
 
@@ -815,11 +839,11 @@ function nf(){return `<div class="card">Not found. <button onclick="go('stock')"
 function blank(){
   const s={items:[],sellers:[],lots:[],moves:[],reqs:[],seq:{SKU:{},SUP:0,LOT:{},REQ:{}},
     set:{biz:'MCR Concept',cc:'94',warn:30,boPhone:'',boEmail:''}};
-  SEED.forEach(([key,cat,name,ptype,pq,pu])=>{const ini=initials(name),unit='pcs',pack={type:ptype,q:pq,u:pu};s.seq.SKU[ini]=(s.seq.SKU[ini]||0)+1;
-    s.items.push({id:rid(),key,ini,sku:skuFmt(ini,s.seq.SKU[ini]),name,cat,unit,pack,reorder:0,seller:'',alts:[],notes:'',created:Date.now()});});
+  SEED.forEach(([key,cat,name,ptype,pq,pu,sub])=>{const ini=initials(name),unit='pcs',pack={type:ptype,q:pq,u:pu};s.seq.SKU[ini]=(s.seq.SKU[ini]||0)+1;
+    s.items.push({id:rid(),key,ini,sku:skuFmt(ini,s.seq.SKU[ini]),name,cat,sub:sub||'',unit,pack,reorder:0,seller:'',alts:[],notes:'',created:Date.now()});});
   return s;}
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.items)&&Array.isArray(s.lots))return fix(s);}catch(e){}const b=fix(blank());b._fresh=true;return b;}
-function fix(s){s.items.forEach(i=>{if(!Array.isArray(i.alts))i.alts=[];});
+function fix(s){s.items.forEach(i=>{if(!Array.isArray(i.alts))i.alts=[];if(OLDCAT[i.cat])i.cat=OLDCAT[i.cat];if(!CATS[i.cat])i.cat='DG';if(i.sub==null)i.sub='';});
   /* stock is always counted in packs: older items counted in g / kg / ml / L become packs of 1 kg or 1 L, and their quantities are converted */
   s.items.forEach(i=>{if(i.unit==='pcs'||!UF[i.unit])return;const old=i.unit,big=UF[old][0]==='m'?'kg':'L',k=cv(1,old,big);
     i.unit='pcs';i.pack={type:big==='kg'?'packet':'bottle',q:1,u:big};i.reorder=r6((+i.reorder||0)*k);
@@ -907,14 +931,15 @@ function vStock(){
   <div class="row srow" style="margin-bottom:12px"><input id="sq" placeholder="Item, SKU, lot — or low, out, expiring" value="${esc(q)}" oninput="q=this.value;drawStock()" onkeydown="if(event.key==='Enter'){q=this.value;drawStock()}"><button class="pri" onclick="q=$('sq').value;drawStock()"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style="vertical-align:-3px;margin-right:6px"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>Search</button></div>
   <div class="card" style="padding:10px 12px"><div class="acts" style="margin:0"><button onclick="xlStock()">↓ Excel</button><button onclick="sendBox('Send stock in hand','Stock in hand',stockText(),'','',defStock)">Send</button></div>
    <div class="note" style="margin-top:6px">↓ Excel: saves the stock-in-hand report (all items and lots) as an Excel file. Send: sends the same report as an Excel, PDF or image file by WhatsApp or email.</div></div>
+  ${catSel('render()')}
   <div class="card scroll"><table><thead><tr><th>SKU</th><th>Item</th><th>In hand</th><th>Next expiry</th><th>Status</th></tr></thead><tbody id="slist"></tbody></table></div>`;}
 const SEARCH_WORDS={'out':x=>x.out,'out of stock':x=>x.out,'no stock':x=>x.out,'low':x=>x.low,'low stock':x=>x.low,'low or out':x=>x.low||x.out,
   'expiring':x=>x.soon,'expiring soon':x=>x.soon,'expired':x=>x.exp,'ok':x=>!x.out&&!x.low&&!x.exp&&!x.soon,'in stock':x=>!x.out};
 function drawStock(){const tb=$('slist');if(!tb)return;const s=q.trim().toLowerCase(),word=SEARCH_WORDS[s];
   const rows=S.items.map(it=>({it,x:stat(it)})).filter(({it,x})=>{
-    if(flt==='low'&&!(x.low||x.out))return false;if(flt==='soon'&&!x.soon)return false;if(flt==='exp'&&!x.exp)return false;
+    if(!catOk(it))return false;if(flt==='low'&&!(x.low||x.out))return false;if(flt==='soon'&&!x.soon)return false;if(flt==='exp'&&!x.exp)return false;
     if(!s)return true;if(word)return word(x);
-    return it.name.toLowerCase().includes(s)||it.sku.toLowerCase().includes(s)||S.lots.some(l=>l.itemId===it.id&&(l.lot.toLowerCase().includes(s)||(l.supLot||'').toLowerCase().includes(s)));
+    return it.name.toLowerCase().includes(s)||it.sku.toLowerCase().includes(s)||catLabel(it).toLowerCase().includes(s)||S.lots.some(l=>l.itemId===it.id&&(l.lot.toLowerCase().includes(s)||(l.supLot||'').toLowerCase().includes(s)));
   }).sort((a,b)=>a.it.name.localeCompare(b.it.name));
   tb.innerHTML=rows.map(({it,x})=>`<tr class="click ${x.out?'f-out':x.low?'f-low':''}" onclick="go('item','${it.id}')"><td class="mono">${esc(it.sku)}</td><td>${esc(it.name)}</td><td class="num">${fq(x.hand,it.unit)}</td><td style="white-space:nowrap">${x.next?fd(x.next)+expTag(x.next):'—'}</td><td>${badges(x)}</td></tr>`).join('')||'<tr><td colspan="6" class="note">No items match.</td></tr>';}
 
@@ -923,7 +948,7 @@ function vItem(){const it=item(param);if(!it)return nf();const x=stat(it),sl=sel
   const lots=S.lots.filter(l=>l.itemId===it.id&&(showUsed||l.qtyLeft>1e-9)).sort(fefo);
   return `<div class="acts top"><button onclick="go('stock')">← Stock</button><button onclick="sendBox('Send item details','Item '+item(param).sku,itemText(item(param)),'','',()=>defItem(item(param)))">Send</button></div>
   <div class="card"><div class="hd"><div style="flex:1;min-width:240px"><h2 style="margin:0">${esc(it.name)}</h2>
-    <div class="note">SKU <b class="mono">${esc(it.sku)}</b> · ${CATS[it.cat]||''} · Stock unit ${esc(unitLabel(it))}</div>
+    <div class="note">SKU <b class="mono">${esc(it.sku)}</b> · ${esc(catLabel(it))} · Stock unit ${esc(unitLabel(it))}</div>
     <div class="big">${fq(x.hand,it.unit)} <span class="note">in hand</span></div>
     <div>${badges(x)}</div>
     <div class="kv"><span>Usable (not expired)</span><b>${fq(x.usable,it.unit)}</b><span>Main supplier</span><b>${sl?esc(sl.name)+(sl.phone?' · '+esc(sl.phone):''):'—'}</b><span>Other suppliers</span><b>${(it.alts||[]).map(seller).filter(Boolean).map(x=>esc(x.name)).join(', ')||'—'}</b>${it.notes?`<span>Notes</span><b>${esc(it.notes)}</b>`:''}</div></div>
@@ -1003,7 +1028,7 @@ function rcvItem(i,v){const l=rcv.lines[i],it=item(v);l.item=v;l.unclear=false;i
 function rcvSup(v){rcv.sup=v;const its=rcv.lines.map(l=>item(l.item)).filter(Boolean),sl=seller(v);$('sinf').innerHTML=sellerInfo(sl,sl&&its.some(i=>i.seller===sl.id));}
 function scanLine(i){openScan(c=>{const r=parseCode(c),it=r.item||(r.lot&&item(r.lot.itemId));if(it){rcvItem(i,it.id);toast(it.name);}else toast('Not found: '+c);});}
 function quickItem(i){if(!canItems())return toast('Only Admin can add items');const l=rcv.lines[i],nm=(l.docName||'').trim();if(!nm)return;
-  const it={id:rid(),key:null,ini:initials(nm),sku:takeSku(nm),name:nm,cat:'RM',unit:'pcs',pack:{type:'packet',q:0,u:'kg'},reorder:0,seller:'',alts:[],notes:'Added from invoice',created:Date.now()};
+  const it={id:rid(),key:null,ini:initials(nm),sku:takeSku(nm),name:nm,cat:'DG',sub:'',unit:'pcs',pack:{type:'packet',q:0,u:'kg'},reorder:0,seller:'',alts:[],notes:'Added from invoice',created:Date.now()};
   if(rcv.sup)linkSeller(it,rcv.sup);S.items.push(it);l.item=it.id;l.docName='';save();render();toast('Item added: '+it.sku);}
 function newSupCard(){const n=rcv.newSup;return `<div class="card" style="border-color:var(--warn)"><b>Supplier on the invoice is not saved yet</b>
    <label style="margin-top:8px">Supplier / company name<input value="${esc(n.name)}" oninput="rcv.newSup.name=this.value"></label>
@@ -1193,7 +1218,7 @@ async function delClient(id){if(relList(id).length)return toast('This client has
 
 /* ================= QR LABELS & PRINT ================= */
 function lotLabel(l){const it=item(l.itemId);return `<div class="lab"><div class="lq">${qr(l.lot)}</div><div><b>${esc(l.lot)}</b><br>${esc(it.name)}<br>SKU ${esc(it.sku)}<br>Received ${fd(l.recv)} · ${fq(l.qtyIn,it.unit)}<br>Expiry ${fd(l.exp)||'—'}<br>Supplier lot ${esc(l.supLot||'—')}</div></div>`;}
-function itemLabel(it){return `<div class="lab"><div class="lq">${qr(it.sku)}</div><div><b>${esc(it.sku)}</b><br>${esc(it.name)}<br>${CATS[it.cat]||''} · ${esc(unitLabel(it))}</div></div>`;}
+function itemLabel(it){return `<div class="lab"><div class="lq">${qr(it.sku)}</div><div><b>${esc(it.sku)}</b><br>${esc(it.name)}<br>${esc(catLabel(it))} · ${esc(unitLabel(it))}</div></div>`;}
 /* labels are drawn as a PNG image: 86 × 30 mm each at 12 px/mm, two per row */
 function labelPng(list,name){if(!list.length)return toast('No labels to save');
   const W=1032,H=360,G=24,cols=list.length>1?2:1,rows=Math.ceil(list.length/cols),c=document.createElement('canvas');
@@ -1205,7 +1230,7 @@ function labelPng(list,name){if(!list.length)return toast('No labels to save');
     L.lines.forEach((t,j)=>{x.font=(j===0?'bold 46px ':'34px ')+'Calibri, Carlito, Arial, sans-serif';let s=String(t);while(x.measureText(s).width>mw&&s.length>4)s=s.slice(0,-2);if(s!==String(t))s=s.slice(0,-1)+'…';x.fillText(s,tx,ty);ty+=j===0?56:46;});});
   c.toBlob(b=>{if(b)saveFile(name,b);else toast('Could not make the label image');},'image/png');}
 function lotLabelData(l){const it=item(l.itemId);return{code:l.lot,lines:[l.lot,it.name,'SKU '+it.sku,'Received '+fd(l.recv)+' · '+fq(l.qtyIn,it.unit),'Expiry '+(fd(l.exp)||'—'),'Supplier lot '+(l.supLot||'—')]};}
-function itemLabelData(it){return{code:it.sku,lines:[it.sku,it.name,(CATS[it.cat]||'')+' · '+unitLabel(it)]};}
+function itemLabelData(it){return{code:it.sku,lines:[it.sku,it.name,catLabel(it)+' · '+unitLabel(it)]};}
 
 /* ================= SCANNER ================= */
 let scan={stream:null,raf:0,det:null,cb:null,busy:false};
@@ -1364,9 +1389,9 @@ function hdr(t){return `${t}\n${S.set.biz}\nGenerated ${fdt(Date.now())}\n\n`;}
 function stockText(){let t=hdr('STOCK IN HAND');S.items.slice().sort((a,b)=>a.name.localeCompare(b.name)).forEach((it,i)=>{const x=stat(it);
   t+=`${i+1}. ${it.name} [${it.sku}] — in hand ${fq(x.hand,it.unit)}, usable ${fq(x.usable,it.unit)} · ${x.out?'OUT':x.low?'LOW':'OK'}${x.next?' · next expiry '+fd(x.next):''}${x.exp?' · has expired lot':''}\n`;});return t.trim();}
 function itemsText(){let t=hdr('ITEMS');S.items.slice().sort((a,b)=>a.sku.localeCompare(b.sku)).forEach(it=>{const sl=seller(it.seller);
-  t+=`${it.sku} — ${it.name} · ${CATS[it.cat]||''} · ${unitLabel(it)} · in hand ${fq(stat(it).hand,it.unit)}${sl?' · main supplier '+sl.name:''}${(it.alts||[]).length?' · other: '+it.alts.map(seller).filter(Boolean).map(x=>x.name).join(', '):''}\n`;});return t.trim();}
+  t+=`${it.sku} — ${it.name} · ${esc(catLabel(it))} · ${unitLabel(it)} · in hand ${fq(stat(it).hand,it.unit)}${sl?' · main supplier '+sl.name:''}${(it.alts||[]).length?' · other: '+it.alts.map(seller).filter(Boolean).map(x=>x.name).join(', '):''}\n`;});return t.trim();}
 function itemText(it){const x=stat(it),sl=seller(it.seller);let t=hdr('ITEM '+it.sku+' — '+it.name);
-  t+=`Category: ${CATS[it.cat]||''}\nIn hand: ${fq(x.hand,it.unit)}\nUsable (not expired): ${fq(x.usable,it.unit)}\nReorder level: ${fq(it.reorder||0,it.unit)}\nStatus: ${x.out?'OUT':x.low?'LOW':'OK'}\nMain supplier: ${sl?sl.name+(sl.phone?' · '+sl.phone:''):'—'}\n\nLots in stock:\n`;
+  t+=`Category: ${esc(catLabel(it))}\nIn hand: ${fq(x.hand,it.unit)}\nUsable (not expired): ${fq(x.usable,it.unit)}\nReorder level: ${fq(it.reorder||0,it.unit)}\nStatus: ${x.out?'OUT':x.low?'LOW':'OK'}\nMain supplier: ${sl?sl.name+(sl.phone?' · '+sl.phone:''):'—'}\n\nLots in stock:\n`;
   const ls=S.lots.filter(l=>l.itemId===it.id&&l.qtyLeft>1e-9).sort(fefo);t+=ls.length?ls.map(l=>`${l.lot} — ${fq(l.qtyLeft,it.unit)} left · received ${fd(l.recv)}${l.exp?' · expiry '+fd(l.exp):''}`).join('\n'):'None';return t.trim();}
 function lotText(l){const it=item(l.itemId),sl=seller(l.seller);return (hdr('LOT '+l.lot)+`Item: ${it.name} [${it.sku}]\nSupplier: ${sl?sl.name:'—'}\nSupplier lot: ${l.supLot||'—'}\nReceived: ${fd(l.recv)} · ${fq(l.qtyIn,it.unit)}\nRemaining: ${fq(l.qtyLeft,it.unit)}\nManufactured: ${fd(l.mfg)||'—'}\nExpiry: ${fd(l.exp)||'—'}\nGRN: ${l.grn||'—'}\nSupplier invoice: ${l.inv||'—'}${l.invDate?' · '+fd(l.invDate):''}\nReceived by: ${l.by||'—'}`).trim();}
 function contactLines(x){return [x.contact&&'Contact: '+x.contact,x.phone&&'WhatsApp / phone: '+x.phone,x.email&&'Email: '+x.email,x.address&&'Address: '+x.address].filter(Boolean).join('\n');}
@@ -1431,11 +1456,14 @@ function markGot(id){const r=S.reqs.find(x=>x.id===id);r.status='Received';r.got
 /* ================= ITEMS ================= */
 function vItems(){return `<h2>Items</h2><div class="acts" style="margin:0 0 12px">${canItems()?`<button class="pri" onclick="go('itemEdit','new')">+ New</button>`:''}<button class="pri" onclick="openScan()">Scan</button><button onclick="labelPng(S.items.slice().sort((a,b)=>a.sku.localeCompare(b.sku)).map(itemLabelData),'Item-labels.png')">↓ QR labels</button><button onclick="sendBox('Send items list','Items list',itemsText(),'','',defItems)">Send</button></div>
   <div class="note" style="margin:-4px 0 12px">${canItems()?'+ New: add a new item. ':''}Scan: open an item by its QR label. ↓ QR labels: print labels for all items. Send: items list as a file by WhatsApp / email.</div>
-  <div class="card scroll"><table><thead><tr><th>SKU</th><th>Item</th><th>Category</th><th>Unit</th><th>In hand</th><th>Lots in stock</th><th>Next expiry</th><th>Main supplier</th><th>Other suppliers</th></tr></thead><tbody>
-  ${S.items.slice().sort((a,b)=>a.sku.localeCompare(b.sku)).map(it=>`<tr class="click" onclick="go('item','${it.id}')"><td class="mono">${esc(it.sku)}</td><td>${esc(it.name)}</td><td>${CATS[it.cat]||''}</td><td>${esc(unitLabel(it))}</td><td class="num">${fq(stat(it).hand,it.unit)}</td><td class="num">${S.lots.filter(l=>l.itemId===it.id&&l.qtyLeft>1e-9).length}</td><td style="white-space:nowrap">${(()=>{const x=stat(it);return x.next?fd(x.next)+expTag(x.next):'—';})()}${stat(it).exp?' <span class="tag bad">expired lot</span>':''}</td><td>${esc((seller(it.seller)||{}).name||'—')}</td><td>${(it.alts||[]).map(seller).filter(Boolean).map(x=>esc(x.name)).join(', ')||'—'}</td></tr>`).join('')}
-  </tbody></table></div>`;}
+  <div class="row srow" style="margin-bottom:8px"><input id="iq" placeholder="Search item, SKU or category" value="${esc(iq)}" oninput="iq=this.value;drawItems()"></div>${catSel('render()')}
+  <div class="card scroll"><table><thead><tr><th>SKU</th><th>Item</th><th>Category</th><th>Unit</th><th>In hand</th><th>Lots in stock</th><th>Next expiry</th><th>Main supplier</th><th>Other suppliers</th></tr></thead><tbody id="ilist">${itemRows()}</tbody></table></div>`;}
+let iq='';function drawItems(){const t=$('ilist');if(t)t.innerHTML=itemRows();}
+function itemRows(){const s=iq.trim().toLowerCase();const L=S.items.filter(it=>catOk(it)&&(!s||it.name.toLowerCase().includes(s)||it.sku.toLowerCase().includes(s)||catLabel(it).toLowerCase().includes(s))).sort((a,b)=>a.sku.localeCompare(b.sku));
+  return L.map(it=>`<tr class="click" onclick="go('item','${it.id}')"><td class="mono">${esc(it.sku)}</td><td>${esc(it.name)}</td><td>${esc(catLabel(it))}</td><td>${esc(unitLabel(it))}</td><td class="num">${fq(stat(it).hand,it.unit)}</td><td class="num">${S.lots.filter(l=>l.itemId===it.id&&l.qtyLeft>1e-9).length}</td><td style="white-space:nowrap">${(()=>{const x=stat(it);return x.next?fd(x.next)+expTag(x.next):'—';})()}${stat(it).exp?' <span class="tag bad">expired lot</span>':''}</td><td>${esc((seller(it.seller)||{}).name||'—')}</td><td>${(it.alts||[]).map(seller).filter(Boolean).map(x=>esc(x.name)).join(', ')||'—'}</td></tr>`).join('')||'<tr><td colspan="9" class="note">No items match.</td></tr>';}
 function canItems(){return AUTH.isAdmin();}
-function vItemEdit(){if(!canItems())return `<div class="card note">Only Admin can add, edit or delete items.</div>`;const nw=param==='new',it0=nw?{name:'',cat:'RM',unit:'pcs',pack:{type:'bottle',q:'',u:'g'},reorder:0,seller:'',alts:[],notes:'',sku:''}:item(param);if(!it0)return nf();
+function subOpts(c,sel){return `<option value="">—</option>`+(SUBS[c]||[]).map(x=>`<option ${x===sel?'selected':''}>${esc(x)}</option>`).join('');}
+function vItemEdit(){if(!canItems())return `<div class="card note">Only Admin can add, edit or delete items.</div>`;const nw=param==='new',it0=nw?{name:'',cat:'DG',sub:'',unit:'pcs',pack:{type:'bottle',q:'',u:'g'},reorder:0,seller:'',alts:[],notes:'',sku:''}:item(param);if(!it0)return nf();
   const it=itemPre?Object.assign({},it0,{name:itemPre.name||it0.name,unit:'pcs',seller:itemPre.sup||it0.seller}):it0;
   const hasLots=!nw&&S.lots.some(l=>l.itemId===it.id);
   return `<div class="acts top"><button onclick="itemPre=null;${nw?"go('items')":`go('item','${it.id}')`}">← Back</button></div><h2>${nw?'Add new item':'Edit item'}</h2><div class="card form2">
@@ -1443,7 +1471,8 @@ function vItemEdit(){if(!canItems())return `<div class="card note">Only Admin ca
    <div class="acts" style="margin:0 0 12px"><button class="pri" onclick="pickDoc('itemForm',true)">Scan</button><button onclick="pickDoc('itemForm',false)">↑ Attach file</button></div>
    ${itemPre?`<div class="note" style="margin-bottom:10px">Filled from: ${esc(itemPre.file)}. Check every field.${scanInfo.unclear.length?' <b style="color:var(--warn)">Some parts were not clear — fill in the blanks.</b>':''}</div>`:''}
    <label>Item name<input id="eN" value="${esc(it.name)}" ${nw?`oninput="$('eS').placeholder=nextSku(this.value)"`:''}></label>
-   <label>Category<select id="eC">${Object.entries(CATS).map(([k,v])=>`<option value="${k}" ${k===it.cat?'selected':''}>${v}</option>`).join('')}</select></label>
+   <div class="two"><label>Category<select id="eC" onchange="$('eSub').innerHTML=subOpts(this.value,'')">${Object.entries(CATS).map(([k,v])=>`<option value="${k}" ${k===it.cat?'selected':''}>${v}</option>`).join('')}</select></label>
+    <label>Sub category<select id="eSub">${subOpts(it.cat,it.sub||'')}</select></label></div>
    <label>SKU / product no.${nw?' — leave blank for an automatic number from the item name initials':''}<input id="eS" value="${esc(it.sku)}" placeholder="${nw?'type the item name first':''}"></label>
    <div class="two"><label>Counted in<select id="ePt">${PACKS.map(x=>`<option value="${x}" ${x===pkType(it)?'selected':''}>${x==='no.'?'no. (pcs)':pkName({pack:{type:x}})}</option>`).join('')}</select></label>
     <label>Contents of one pack<div class="row"><input id="ePq" type="number" min="0" step="any" inputmode="decimal" value="${esc((it.pack||{}).q||'')}" placeholder="e.g. 750"><select id="ePu" style="width:90px">${['g','kg','ml','L'].map(u=>`<option ${u===((it.pack||{}).u||'g')?'selected':''}>${u}</option>`).join('')}</select></div></label></div>
@@ -1456,7 +1485,7 @@ function saveItem(id){if(!canItems())return toast('Only Admin can add or edit it
   const cat=$('eC').value;let sku=$('eS').value.trim().toUpperCase();
   if(sku&&S.items.some(i=>i.sku.toUpperCase()===sku&&i.id!==id))return toast('SKU '+sku+' is already used');
   const main=$('eSe').value,alts=[...document.querySelectorAll('.altc')].filter(c=>c.checked).map(c=>c.value).filter(v=>v!==main);
-  const f={name,cat,reorder:id==='new'?0:((item(id)||{}).reorder||0),seller:main,alts,notes:$('eNo').value.trim()};
+  const f={name,cat,sub:$('eSub').value,reorder:id==='new'?0:((item(id)||{}).reorder||0),seller:main,alts,notes:$('eNo').value.trim()};
   const pq=+$('ePq').value;f.unit='pcs';f.pack={type:$('ePt').value,q:pq>0?pq:0,u:$('ePu').value};
   if(id==='new'){if(!sku)sku=takeSku(name);
     const it={id:rid(),key:null,ini:initials(name),sku,created:Date.now(),...f};S.items.push(it);save();if(retView==='prodEdit'&&pe){retView=null;pe.lines.push({item:it.id,qty:'',unit:it.unit});go('prodEdit');}else go('item',it.id);toast('Item added: '+sku);}
@@ -1784,7 +1813,7 @@ function buildImp(file,text){const p=parseDoc(text);const unc=scanInfo.unclear.s
   const ex=findSupplier(p);
   imp={file,text,unclear:unc,phones:p.phones,emails:p.emails,
     sel:{on:impMode==='seller'&&!!(p.name||p.phone||p.email),target:ex?ex.id:'new',name:p.name,contact:'',phone:p.phone,email:p.email,address:p.address},
-    items:p.items.map(x=>({on:true,name:x.name,qty:x.qty,unit:x.unit,match:x.match||'new',cat:'RM'}))};}
+    items:p.items.map(x=>({on:true,name:x.name,qty:x.qty,unit:x.unit,match:x.match||'new',cat:'DG'}))};}
 function reImp(){const t=$('impT').value,f=imp?imp.file:'document';buildImp(f,t);render();toast('Text read again');}
 function vImp(){if(!imp)return nf();const x=imp.sel;
   return `<div class="acts top"><button onclick="imp=null;go('set')">← Back</button></div><h2>Check imported data</h2><div class="note" style="margin-bottom:10px">From: ${esc(imp.file)}. Check and correct everything before saving.</div>
@@ -1816,7 +1845,7 @@ function saveImp(){let sid=null,ni=0,nl=0;const x=imp.sel;
   for(const r of imp.items.filter(r=>r.on&&r.name.trim())){let it;
     if(r.match==='new'&&!canItems())continue;
     if(r.match==='new'){const nm=r.name.trim();it=S.items.find(i=>i.name.toLowerCase()===nm.toLowerCase());
-      if(!it){it={id:rid(),key:null,ini:initials(nm),sku:takeSku(nm),name:nm,cat:r.cat,unit:r.unit,reorder:0,seller:'',alts:[],notes:'Imported from '+imp.file,created:Date.now()};S.items.push(it);ni++;}}
+      if(!it){it={id:rid(),key:null,ini:initials(nm),sku:takeSku(nm),name:nm,cat:r.cat,sub:'',unit:'pcs',pack:{type:'packet',q:0,u:'kg'},reorder:0,seller:'',alts:[],notes:'Imported from '+imp.file,created:Date.now()};S.items.push(it);ni++;}}
     else it=item(r.match);
     if(it&&sid){linkSeller(it,sid);nl++;}}
   if(!sid&&!ni&&!nl)return toast('Nothing selected to save');
@@ -1844,7 +1873,7 @@ function defClients(){const cols=['Code','Client','Contact person','WhatsApp / p
 function defSuppliers(){const cols=['Code','Supplier','Contact person','WhatsApp / phone','Email','Address','Items supplied'];
   return xlDef('Suppliers','Suppliers list',S.sellers.length+' supplier(s)',cols,S.sellers.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(z=>[XT(z.code),XT(z.name),XT(z.contact),XT(z.phone),XT(z.email),XT(z.address),XT(S.items.filter(i=>i.seller===z.id||(i.alts||[]).includes(z.id)).map(i=>i.name).join(', '))]),[8,24,18,16,26,30,40]);}
 function defItems(){const cols=['SKU','Item','Category','Unit','In hand','Usable (not expired)','Reorder level','Lots in stock','Next expiry','Main supplier','Other suppliers'];
-  const rows=S.items.slice().sort((a,b)=>a.sku.localeCompare(b.sku)).map(it=>{const x=stat(it),sl=seller(it.seller);return [XT(it.sku),XT(it.name),XT(CATS[it.cat]||''),XT(unitLabel(it)),XN(x.hand,it.unit),XN(x.usable,it.unit),XN(it.reorder||0,it.unit),{v:S.lots.filter(l=>l.itemId===it.id&&l.qtyLeft>1e-9).length,s:'int'},XD(x.next),XT(sl?sl.name:''),XT((it.alts||[]).map(seller).filter(Boolean).map(z=>z.name).join(', '))];});
+  const rows=S.items.slice().sort((a,b)=>a.sku.localeCompare(b.sku)).map(it=>{const x=stat(it),sl=seller(it.seller);return [XT(it.sku),XT(it.name),XT(catLabel(it)),XT(unitLabel(it)),XN(x.hand,it.unit),XN(x.usable,it.unit),XN(it.reorder||0,it.unit),{v:S.lots.filter(l=>l.itemId===it.id&&l.qtyLeft>1e-9).length,s:'int'},XD(x.next),XT(sl?sl.name:''),XT((it.alts||[]).map(seller).filter(Boolean).map(z=>z.name).join(', '))];});
   return xlDef('Items-list','Items list',S.items.length+' item(s)',cols,rows,[11,34,16,24,10,12,11,9,12,24,30]);}
 function defItem(it){const x=stat(it),sl=seller(it.seller),ls=S.lots.filter(l=>l.itemId===it.id&&l.qtyLeft>1e-9).sort(fefo);
   const mv=S.moves.filter(m=>m.itemId===it.id).map(m=>{const l=lot(m.lotId),cl=m.client&&client(m.client);return [XDT(m.t),XT(tLabel(m)),XT(l?l.lot:''),XN(m.qty,it.unit),XT(cl?cl.name:''),XT(m.cinv),XT(m.ref),XT(m.by)];});
@@ -1880,7 +1909,7 @@ function defStock(){const c1=['SKU','Item','Category','Unit','In hand','Usable (
   const r1=xlHead('Stock in hand report','All items · '+S.items.length+' item(s)',c1);
   S.items.slice().sort((a,b)=>a.name.localeCompare(b.name)).forEach(it=>{const x=stat(it),sl=seller(it.seller);
     const st=[x.out?'OUT OF STOCK':x.low?'LOW':'OK',x.exp?'EXPIRED LOT':'',x.soon?'EXPIRING':''].filter(Boolean).join(', ');
-    r1.push([{v:it.sku,s:'txt'},{v:it.name,s:'txt'},{v:CATS[it.cat]||'',s:'txt'},{v:unitLabel(it),s:'txt'},XN(x.hand,it.unit),XN(x.usable,it.unit),XN(it.reorder||0,it.unit),{v:st,s:'txt'},
+    r1.push([{v:it.sku,s:'txt'},{v:it.name,s:'txt'},{v:catLabel(it),s:'txt'},{v:unitLabel(it),s:'txt'},XN(x.hand,it.unit),XN(x.usable,it.unit),XN(it.reorder||0,it.unit),{v:st,s:'txt'},
       x.next?{v:x.next,t:'d'}:{v:'',s:'txt'},{v:S.lots.filter(l=>l.itemId===it.id&&l.qtyLeft>1e-9).length,s:'int'},{v:sl?sl.name:'',s:'txt'},{v:sl&&sl.phone||'',s:'txt'},
       {v:(it.alts||[]).map(seller).filter(Boolean).map(z=>z.name).join(', '),s:'txt'}]);});
   const c2=['Our lot no.','Item','SKU','Supplier','Supplier lot','GRN no.','Invoice no.','Received','Expiry','Qty received','Remaining','Unit'];
@@ -1960,7 +1989,18 @@ function seedDemo(){const d=n=>{const x=new Date();x.setDate(x.getDate()+n);retu
     ['foil',D,6,[[30, 50, 664, "RE-8015"], [10, 83, 292, "RE-8679"]]],
     ['clingwrap',D,3,[[6, 42, 295, "RE-7019"]]],
     ['gloves',D,2,[]],
-    ['washpowder',D,2,[[6, 40, 167, "RE-4592"], [2, 77, 184, "RE-6934"]]]];
+    ['washpowder',D,2,[[6, 40, 167, "RE-4592"], [2, 77, 184, "RE-6934"]]],
+    ['cheeseslice',C,5,[[20,5,165,"UC-2636"]]],
+    ['mozzarella',C,4,[[12,10,132,"UC-8492"]]],
+    ['vanillaice',C,3,[[12,17,288,"UC-496"]]],
+    ['mangopuree',C,5,[[15,13,25,"UC-2832"]]],
+    ['yoghurt',C,3,[[9,6,26,"UC-9655"]]],
+    ['coffeebeans',A,4,[[8,25,253,"LS-7405"]]],
+    ['cornflakes',D,3,[[12,6,157,"RE-9996"]]],
+    ['darkchoc',C,4,[[8,20,292,"UC-5912"]]],
+    ['fries',D,5,[[20,6,158,"RE-5852"]]],
+    ['greencurry',A,4,[[12,6,65,"LS-1698"]]],
+    ['tuna',B,4,[[8,23,101,"AR-6915"]]]];
   plan.forEach(([k,sid,ro])=>{const i=it(k);i.reorder=ro;linkSeller(i,sid);});linkSeller(it('stockpowder'),D);linkSeller(it('salt'),A);linkSeller(it('cocoa'),A);
   const recs=[];plan.forEach(([k,sid,ro,ls])=>ls.forEach(([q,ago,exp,sl])=>recs.push({k,sid,q,ago,exp,sl})));
   recs.sort((a,b)=>b.ago-a.ago);const grnOf={};
